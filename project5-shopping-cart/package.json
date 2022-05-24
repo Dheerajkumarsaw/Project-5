@@ -1,0 +1,28 @@
+{
+  "name": "project5-shopping-cart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DheeruBhai2000/Project-5.git"
+  },
+  "author": "Dheeraj kumar,Ankit Gupta,kaustubh ganorkar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DheeruBhai2000/Project-5/issues"
+  },
+  "homepage": "https://github.com/DheeruBhai2000/Project-5#readme",
+  "dependencies": {
+    "aws-sdk": "^2.1141.0",
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.20.0",
+    "express": "^4.18.1",
+    "mongoose": "^6.3.4",
+    "multer": "^1.4.4",
+    "nodemon": "^2.0.16"
+  }
+}
