@@ -30,4 +30,9 @@ const isValidPass = function (password) {
     return regx.test(password)
 };
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin }
+const isValidName = function (value){
+    const regx= /^[A-Za-z ]{2,10}$/
+    return regx.test(value)
+}
+
+module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName }
