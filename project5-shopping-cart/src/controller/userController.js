@@ -1,97 +1,90 @@
 const userModel = require("../model/userModel");
 const validator = require("../validator/validator")
 const bcrypt = require("bcrypt");
-//<<<<<<< HEAD
-const router = require("../route/route");
+const saveFile = require("../aws/aws-s3");
 
 //----------------------PUT Api's------------------------
-const updateUser = async function(req, res){
-    try{
+const updateUser = async function (req, res) {
+    try {
         const requestBody = req.body
         const userId = req.params.userId
         let newData = {}
-//---------------dB call for UserID check-----------------
-        const userCheck= await userModel.findOne({_id : userId})
-        if(!userCheck) return send.status(404).send({status:true, message: "No user found by User Id given in path params"})
+        //---------------dB call for UserID check-----------------
+        const userCheck = await userModel.findOne({ _id: userId })
+        if (!userCheck) return send.status(404).send({ status: true, message: "No user found by User Id given in path params" })
 
-//-------------Empty Validation------------
-        if(Object.keys(requestBody).length==0){
-            return res.status(400).send({status: false, message:"Please fill areas to update"})
+        //-------------Empty Validation------------
+        if (Object.keys(requestBody).length == 0) {
+            return res.status(400).send({ status: false, message: "Please fill areas to update" })
         }
-//-------------Destructuring--------------
-        const {fname, lname, email, phone,address, password} = requestBody
+        //-------------Destructuring--------------
+        const { fname, lname, email, phone, address, password } = requestBody
 
-//-----------validation-------------
-        if(validator.isValidBody(fname)){
-            if(!validator.isValidName(fname))return res.status(400).send({status: false, message:"Please Enter a valid First Name"})
+        //-----------validation-------------
+        if (validator.isValidBody(fname)) {
+            if (!validator.isValidName(fname)) return res.status(400).send({ status: false, message: "Please Enter a valid First Name" })
             newData['fname'] = fname
         }
-        if(validator.isValidBody(lname)){
-            if(!validator.isValidName(lname))return res.status(400).send({status: false, message:"Please Enter a valid Last Name"})
+        if (validator.isValidBody(lname)) {
+            if (!validator.isValidName(lname)) return res.status(400).send({ status: false, message: "Please Enter a valid Last Name" })
             newData['lname'] = lname
         }
-        if(validator.isValidBody(email)){
-            if(!validator.isValidEmail(email))return res.status(400).send({status: false, message:"Please Enter a valid Email ID"})
+        if (validator.isValidBody(email)) {
+            if (!validator.isValidEmail(email)) return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
             newData['email'] = email
         }
-        if(validator.isValidBody(phone)){
-            if(!validator.isValidName(phone))return res.status(400).send({status: false, message:"Please Enter a valid phone numbe"})
+        if (validator.isValidBody(phone)) {
+            if (!validator.isValidName(phone)) return res.status(400).send({ status: false, message: "Please Enter a valid phone numbe" })
             newData['phone'] = phone
         }
-        if(validator.isValidBody(password)){
-            if(!validator.isValidPass(password))return res.status(400).send({status: false, message:"Please Enter a valid Password, would have min 8 and max 15 characters"})
+        if (validator.isValidBody(password)) {
+            if (!validator.isValidPass(password)) return res.status(400).send({ status: false, message: "Please Enter a valid Password, would have min 8 and max 15 characters" })
             newData['password'] = password
         }
-//-----------------address's Input and validation check-------------------
-        if (validator.isValidBody(address)){
+        //-----------------address's Input and validation check-------------------
+        if (validator.isValidBody(address)) {
             const parsedAddress = JSON.parse(address) // Parsing to object form
 
-            if(address.shipping.street){
+            if (parsedAddress.shipping.street) {
                 newData.address.shipping['street'] = parsedAddress.shipping.street
             }
-            if(address.shipping.city){
-                if(!validator.isValidName(address.shipping.city)) return res.status(400).send({status: false, message:"Please Enter a valid City"})
+            if (parsedAddress.shipping.city) {
+                if (!validator.isValidName(parsedAddress.shipping.city)) return res.status(400).send({ status: false, message: "Please Enter a valid City" })
                 newData.address.shipping['city'] = parsedAddress.shipping.city
             }
-            if(address.shipping.pincode){
-                if(!validator.isValidPin(address.shipping.pincode))return res.status(400).send({status: false, message:"Please Enter a valid Pin Code"})
+            if (parsedAddress.shipping.pincode) {
+                if (!validator.isValidPin(parsedAddress.shipping.pincode)) return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
                 newData.address.shipping['pincode'] = parsedAddress.shipping.pincode
             }
 
-            if(address.billing.street){
+            if (parsedAddress.billing.street) {
                 newData.address.billing['street'] = parsedAddress.billing.street
             }
-            if(address.billing.city){
-                if(!validator.isValidName(address.billing.city)) return res.status(400).send({status: false, message:"Please Enter a valid City"})
+            if (parsedAddress.billing.city) {
+                if (!validator.isValidName(parsedAddress.billing.city)) return res.status(400).send({ status: false, message: "Please Enter a valid City" })
                 newData.address.billing['city'] = parsedAddress.billing.city
             }
-            if(address.billing.pincode){
-                if(!validator.isValidPin(address.billing.pincode))return res.status(400).send({status: false, message:"Please Enter a valid Pin Code"})
+            if (parsedAddress.billing.pincode) {
+                if (!validator.isValidPin(parsedAddress.billing.pincode)) return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
                 newData.address.billing['pincode'] = parsedAddress.billing.pincode
             }
         }
-//--------Authentication here-----------
+        //--------Authentication here-----------
 
-//---------Already Exixts for phone and email data --DB Check-----
+        //---------Already Exixts for phone and email data --DB Check-----
+        const doublicateCheck = await userModel.find({ $or: { email: email, phone: phone } })
+        if (doublicateCheck) return status(400).send({ status: false, message: "Please Check wheather phone number and email Id already exists" })
 
-//---------updation perform in DB-------------
-
+        //---------updation perform in DB-------------
+        const updatething = await findOneAndUpdate({ _id: userId }, newData, { new: true })
+        return res.status(200).send({ status: true, message: "user profile updated", data: updatething })
     }
-    catch(err){
-        res.status(500).send({status: false, Error:err.message})
+    catch (err) {
+        res.status(500).send({ status: false, Error: err.message })
     }
 }
-module.exports ={updateUser}
 
-
-
-
-
-//
-
-const saveFile = require("../aws/aws-s3");
-const { findOne } = require("../model/userModel");
-
+//------------------Create User---------------------
 const createUser = async function (req, res) {
     try {
         const requestBody = req.body;
@@ -178,5 +171,5 @@ const createUser = async function (req, res) {
     }
 };
 
-module.exports = { createUser }
-//>>>>>>> 7818793279185d0458a444147f7fa1302c9e090a
+module.exports = { createUser, updateUser }
+
