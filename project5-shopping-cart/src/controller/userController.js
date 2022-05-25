@@ -1,7 +1,8 @@
 const userModel = require("../model/userModel");
 const validator = require("../validator/validator")
 const bcrypt = require("bcrypt");
-const saveFile = require("../aws/aws-s3")
+const saveFile = require("../aws/aws-s3");
+const jwt = require("jsonwebtoken")
 
 const createUser = async function (req, res) {
     try {
@@ -77,6 +78,7 @@ const createUser = async function (req, res) {
         requestBody.password = hashPassword  //SAVING FOR  CREATE DOCS
         //   =================   AWS  S3  URL  CREATION  ADN  SAVING FILE  IN AWS  ===========================
         const uploadedURL = await saveFile.uploadFiles(requestFiles[0])
+        // console.log(uploadedURL)
         requestBody.profileImage = uploadedURL //SAVING FOR  CREATE DOCS
         requestBody.address = address  //SAVING FOR  CREATE DOCS
         //   DOCS  CFREATION  IN DB
@@ -85,8 +87,43 @@ const createUser = async function (req, res) {
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
-
     }
 };
 
-module.exports = { createUser }
+const loginUser = async function (req, res) {
+    try {
+        const loginDetails = req.body;
+        //  if body is empty
+        if (Object.keys(loginDetails).length == 0) {
+            return res.status(400).send({ status: false, message: "Enter Login Cridentials" })
+        }
+        const { email, password } = loginDetails; // destructuring
+        if (!validator.isValidBody(email) || !validator.isValidEmail(email)) {
+            return res.status(400).send({ status: false, message: "Enter Email should be valid" })
+        }
+        if (!validator.isValidBody(password) || !validator.isValidPass(password)) {
+            return res.status(400).send({ status: false, message: "Enter Password Should be valid" })
+        }
+        const existUser = await userModel.findOne({ email: email });
+        if (!existUser) {
+            return res.status(401).send({ status: false, message: "Unautherize to Login Register First" })  // status code doubt
+        }
+        const matchPass = await bcrypt.compare(password, existUser.password);
+        if (!matchPass) {
+            return res.status(400).send({ status: false, message: "You Entered Wrong password" })
+        }
+        //   token creation
+        const token = jwt.sign({
+            userId: existUser._id,
+            group: "group20",
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + 10 * 60 * 60
+        }, "weAreIndians")
+        res.status(200).send({ status: true, message: " User Login Successfull", data: { userId: existUser._id, token: token } })
+    }
+    catch (error) {
+
+    }
+}
+
+module.exports = { createUser, loginUser }
