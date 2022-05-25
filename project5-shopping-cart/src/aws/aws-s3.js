@@ -8,11 +8,11 @@ AWS.config.update({
 
 const uploadFiles = async (file) => {
     return new Promise(function (resolve, reject) {
-        const s3 = new AWS.S3({ apiVersion: "2003-03-01" });
+        const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
         const uploadParams = {
             ACL: "public-read",
             Bucket: "classroom-training-bucket",
-            Key: "Group20/ProjectManagement",
+            Key: "Group20/ProjectManagement/" + file.originalname,
             Body: file.buffer
         };
         s3.upload(uploadParams, function (err, data) {
