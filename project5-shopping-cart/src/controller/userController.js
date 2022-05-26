@@ -5,7 +5,6 @@ const saveFile = require("../aws/aws-s3")
 const jwt = require("jsonwebtoken")
 
 
-
 //------------------   Create User   ---------------------
 const createUser = async function (req, res) {
     try {

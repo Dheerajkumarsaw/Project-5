@@ -2,13 +2,16 @@ const productModel = require("../model/productModel");
 const validator = require("../validator/validator");
 const saveFile = require("../aws/aws-s3")
 
-
+// ----------------------------   CREATE  API   --------------------------------------------
 const createProduct = async function (req, res) {
     try {
         const requestBody = req.body;
         const requestFiles = req.files;
         if (Object.keys(requestBody).length == 0) {
             return res.status(400).send({ status: false, message: "Enter data in body" })
+        }
+        if (requestBody.isDeleted) {
+            return res.status(400).send({ status: false, message: `You can't create Deleted Product Please Mark IsDleted false` })
         }
         if (requestFiles.length == 0) {
             return res.status(400).send({ status: false, message: "Enter Files to be uploadp" })
@@ -68,6 +71,6 @@ const createProduct = async function (req, res) {
     }
 };
 
-module.exports = { createProduct }
+module.exports = { createProduct, }
 
 
