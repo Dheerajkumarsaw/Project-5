@@ -3,13 +3,17 @@ const validator = require("../validator/validator");
 const saveFile = require("../aws/aws-s3")
 const moment = require("moment")
 
-
+// ----------------------------   CREATE  API   --------------------------------------------
 const createProduct = async function (req, res) {
     try {
         const requestBody = req.body;
         const requestFiles = req.files;
+        // console.log(requestFiles)
         if (Object.keys(requestBody).length == 0) {
             return res.status(400).send({ status: false, message: "Enter data in body" })
+        }
+        if (requestBody.isDeleted) {
+            return res.status(400).send({ status: false, message: `You can't create Deleted Product Please Mark IsDleted false` })
         }
         if (requestFiles.length == 0) {
             return res.status(400).send({ status: false, message: "Enter Files to be uploadp" })
@@ -46,8 +50,14 @@ const createProduct = async function (req, res) {
         }
         if (!validator.isValidBody(availableSizes) || !validator.isValidEnum(availableSizes)) {
             return res.status(400).send({ status: false, message: `Enter Any of These only "S", "XS", "M", "X", "L", "XXL", "XL"` })
-        }
-        if (!validator.isValidBody(installments) || !/^[0-9]$/.test(installments)) {
+        }// } else {
+        //     const size = JSON.parse(availableSizes)
+        //     for (let i = 0; i < size.length; i++)
+        //         if (!validator.isValidEnum(size[i])) {
+        //             return res.status(400).send({ status: false, message: `${size[i]} not allowed! Enter Any of These only "S", "XS", "M", "X", "L", "XXL", "XL" ` })
+        //         }
+        // }
+        if (!validator.isValidBody(installments) || !validator.isValidInstallment(installments)) {
             return res.status(400).send({ status: false, message: "Enter installments only Number " })
         }
         if (requestBody.isDeleted) {
@@ -157,5 +167,3 @@ const deleteProduct = async (req, res) => {
     }
 }
 module.exports = { createProduct, getSpecificProduct, deleteProduct  }
-
-
