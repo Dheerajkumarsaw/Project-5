@@ -30,9 +30,18 @@ const isValidPass = function (password) {
     return regx.test(password)
 };
 
-const isValidName = function (value){
-    const regx= /^[A-Za-z ]{2,10}$/
+const isValidName = function (value) {
+    const regx = /^[A-Za-z ]{2,10}$/
     return regx.test(value)
+};
+
+const isValidDeciNum = function (value) {
+    const regx = /^[0-9]\d*(\.\d+)?$/
+    return regx.test(value)
+};
+
+const isValidEnum = function (value) {
+    return ["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(value) !== -1
 }
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName }
+module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum }

@@ -5,8 +5,7 @@ const saveFile = require("../aws/aws-s3")
 const jwt = require("jsonwebtoken")
 
 
-
-//------------------Create User---------------------
+//------------------   Create User   ---------------------
 const createUser = async function (req, res) {
     try {
         const requestBody = req.body;
@@ -92,7 +91,7 @@ const createUser = async function (req, res) {
         res.status(500).send({ status: false, message: error.message })
     }
 };
-
+// -------------------------  LOGIN   USER  -----------------------------
 const loginUser = async function (req, res) {
     try {
         const loginDetails = req.body;
@@ -247,7 +246,6 @@ const updateUser = async function (req, res) {
         res.status(500).send({ status: false, Error: err.message })
     }
 }
-
 
 
 module.exports = { createUser, getUser, loginUser, updateUser }
