@@ -2,13 +2,17 @@ const productModel = require("../model/productModel");
 const validator = require("../validator/validator");
 const saveFile = require("../aws/aws-s3")
 
-
+// ----------------------------   CREATE  API   --------------------------------------------
 const createProduct = async function (req, res) {
     try {
         const requestBody = req.body;
         const requestFiles = req.files;
+        // console.log(requestFiles)
         if (Object.keys(requestBody).length == 0) {
             return res.status(400).send({ status: false, message: "Enter data in body" })
+        }
+        if (requestBody.isDeleted) {
+            return res.status(400).send({ status: false, message: `You can't create Deleted Product Please Mark IsDleted false` })
         }
         if (requestFiles.length == 0) {
             return res.status(400).send({ status: false, message: "Enter Files to be uploadp" })
@@ -43,10 +47,19 @@ const createProduct = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Enter valide details in style" })
             }
         }
-        if (!validator.isValidBody(availableSizes) || !validator.isValidEnum(availableSizes)) {
+        const size =JSON.parse(availableSizes)
+        console.log(size)
+        if (!validator.isValidBody(availableSizes)) {
             return res.status(400).send({ status: false, message: `Enter Any of These only "S", "XS", "M", "X", "L", "XXL", "XL"` })
         }
-        if (!validator.isValidBody(installments) || !/^[0-9]$/.test(installments)) {
+        else{
+            for(let i=0; i<size.length; i++){
+                if(!validator.isValidEnum(size[i]))
+                return res.status(400).send({status: false, message: `${size[i]} not allowed!, Only enter Any of These ["S", "XS", "M", "X", "L", "XXL", "XL"]`})
+            }
+
+        }
+        if (!validator.isValidBody(installments) || !validator.isValidInstallment(installments)) {
             return res.status(400).send({ status: false, message: "Enter installments only Number " })
         }
         if (requestBody.isDeleted) {
@@ -68,7 +81,8 @@ const createProduct = async function (req, res) {
     }
 };
 
-module.exports = { createProduct }
+
+module.exports = { createProduct, }
 
 
 //------------Put API's----------------------

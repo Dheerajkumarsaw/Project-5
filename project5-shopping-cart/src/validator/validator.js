@@ -43,10 +43,16 @@ const isValidDeciNum = function (value) {
 
 const isValidEnum = function (value) {
     return ["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(value) !== -1
+};
+
+const isValidInstallment = function (value) {
+    const regx = /^[0-9]{1,2}$/;
+    return regx.test(value);
 }
 
 const isValidBoolean = function (value) {
     return ["true","false"].indexOf(value) !== -1
 }
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean}
+module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean, isValidInstallment}
+
