@@ -93,12 +93,10 @@ const createProduct = async function (req, res) {
 
 const getSpecificProduct = async function (req, res) {
     try{
-        let data = {
-            isDeleted: false
-        }
+        let data = {isDeleted: false}
         let queryDataSize = req.query.size;
         if (queryDataSize) {
-            if (!(validator.isValid(queryDataSize)) && (validator.isValidSize(queryDataSize))) {
+            if (!(validator.isValidBody(queryDataSize)) && (validator.isValidEnum(queryDataSize))) {
                 return res.status(400).send({status: false, message:"plz Enter a valid Size"})
             }
             if(!(validator.isValidSize(queryDataSize))) {
@@ -238,15 +236,15 @@ const deleteProduct = async (req, res) => {
         if (!validator.isValidObjectId(productId)) {
             return res.status(400).send({ status: true, message: "Invalid productId" })
         }
-        const deletedProductId = await productModel.findById({_id: productId})
-        if (!deletedProductId) {
-            return res.status(404).send({ status: true, message: `This ${productId} productId does not exist ` })
-        }
-        if (deletedProductId.isDeleted !== false) {
-            return res.status(404).send({ status: true, message: `This ${productId} productId is already Deleted `
-            })
-        }
-        await productModel.findByIdAndUpdate({_id: productId }, { $set: { isDeleted: true, deletedAt: moment().format()}}, { new: true})
+        // const deletedProductId = await productModel.findById({_id: productId})
+        // if (!deletedProductId) {
+        //     return res.status(404).send({ status: true, message: `This ${productId} productId does not exist ` })
+        // }
+        // if (deletedProductId.isDeleted !== false) {
+        //     return res.status(404).send({ status: true, message: `This ${productId} productId is already Deleted `
+        //     })
+        // }
+        const existProduct = await productModel.findByIdAndUpdate({_id: productId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: moment().format()}}, { new: true})
         return res.status(200).send({status: true, message: "Deleted Successfully" })
     } catch (err) {
         return res.status(500).send({ status: false,Error: err.message})
