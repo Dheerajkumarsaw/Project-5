@@ -13,6 +13,14 @@ router.get("/user/:userId/profile", MW.authentication, userController.getUser)
 
 router.put("/user/:userId/profile", MW.authentication, userController.updateUser)
 
+
+// **-------------------------------------------Product Api's----------------------------------------------------**
+
+
 router.post("/products", productController.createProduct);
+
+router.get("/products", productController.getSpecificProduct)
+
+router.delete("/products/:productId", productController.deleteProduct)
 
 module.exports = router
