@@ -1,9 +1,10 @@
-const productModel = require("../model/productModel");
-const validator = require("../validator/validator");
+const productModel = require("../model/productModel")
+const validator = require("../validator/validator")
 const saveFile = require("../aws/aws-s3")
 const moment = require("moment")
 
-// ----------------------------   CREATE  API   --------------------------------------------
+// Create Product
+
 const createProduct = async function (req, res) {
     try {
         const requestBody = req.body;
@@ -91,6 +92,11 @@ const createProduct = async function (req, res) {
     }
 };
 
+
+// get product by filter
+
+module.exports={createProduct, getProductById}
+
 const getSpecificProduct = async function (req, res) {
     try{
         let data = {isDeleted: false}
@@ -156,8 +162,31 @@ const getSpecificProduct = async function (req, res) {
     }
 }
 
+//get Product by ID
 
-//------------Put API's----------------------
+const getProductById = async (req,res)=>{
+    try {
+        const productId  = req.params.productId
+    
+        if(!validator.isValidObjectId(productId)){
+            return res.status(400).send({status:false, message:"Invalid product Id"})
+        }
+    
+        const isProductExist = await productModel.findById(productId)
+    
+        if(!isProductExist){
+            return res.status(404).send({status:false, message:"Product Not found!"})
+        }
+    
+        return res.status(200).send({status:true, message:"Success", data:isProductExist})
+        
+    } catch (error) {
+        res.status(500).send({status:false, message:error.message})
+    }
+}
+
+
+//Update Product by Id
 
 const updateProduct = async function (req, res) {
     try {
@@ -230,6 +259,9 @@ const updateProduct = async function (req, res) {
     }
 }
 
+
+//Delete product by Id
+
 const deleteProduct = async (req, res) => {
     try {
         const productId = req.params.productId
@@ -251,4 +283,5 @@ const deleteProduct = async (req, res) => {
     }
 }
 
-module.exports = { createProduct, getSpecificProduct, deleteProduct, updateProduct }
+module.exports = {createProduct, getSpecificProduct, getProductById, updateProduct, deleteProduct}
+
