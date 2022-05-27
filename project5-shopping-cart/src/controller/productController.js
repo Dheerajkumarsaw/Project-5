@@ -71,3 +71,77 @@ const createProduct = async function (req, res) {
 module.exports = { createProduct }
 
 
+//------------Put API's----------------------
+
+const updateProduct = async function (req, res) {
+    try {
+        const requestBody= req.body
+        const productId = req.params.productId
+        const file = req.files
+        let newData = {}
+        
+        //-------------dB call for product existance--------------------
+        const productCheck = await productModel.findOne({_id: productId, isDeleted:false})
+        if(!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
+
+        //-----------------------Destructuring------------------------
+        const{title,description,price,currencyId,currencyFormat,isFreeShipping,productImage,style,availableSizes,installments,isDeleted} = requestBody
+
+        //-----------------Empty Body check------------------
+        if((Object.keys(requestBody).length ==0) && (file.length==0)){
+            return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
+        }
+        // ------------------validation-------------------------
+        if (validator.isValidBody(title)) {
+
+            const titleExist = await productModel.findOne({title: title}) // DB call for title existance
+            if(titleExist) return res.status(400).send({status: false, message:"This 'title' name already existes!"})
+            
+            if (!validator.isValidName(title)) return res.status(400).send({ status: false, message: "Please Enter a valid title should contain at least 2 characters for word formation" })
+            newData['title'] = title
+        }
+
+        if (validator.isValidBody(description)) {
+            if (!validator.isValidName(description)) return res.status(400).send({ status: false, message: "Please Enter a valid description, should contain at least 2 characters for word formation" })
+            newData['description'] = description
+        }
+
+        if (validator.isValidBody(price)) {
+            if (!validator.isValidDeciNum(price)) return res.status(400).send({ status: false, message: "Please Enter a valid price." })
+            newData['price'] = price
+        }
+
+        if (currencyId) return res.status(400).send({ status: false, message:"Currency Id doesn't need to update, because it has only 'INR'(indian rupee) Option, fill other fields besides"})
+        
+        if (currencyFormat) return res.status(400).send({ status: false, message:"Currency Format doesn't need to update, because it has only One symbol, fill other fields besides"})
+
+        if (validator.isValidBody(isFreeShipping)) {
+            if (!validator.isValidBoolean(isFreeShipping)) return res.status(400).send({ status: false, message: "isFreeShipping needs to be a Boolean" })
+            newData['isFreeShipping'] = isFreeShipping
+        }
+
+        if(file.length >0){
+            const uploadProductImage = await saveFile.uploadFiles(file[0])
+            newData['productImage'] = uploadedURL
+        }
+        
+        if (validator.isValidBody(style)) {
+            if (!validator.isValidName(style)) return res.status(400).send({ status: false, message: "Please Enter a valid style, should contain at least 2 characters for word formation" })
+            newData['style'] = style
+        }
+        if (validator.isValidBody(availableSizes)) {
+            if (!validator.isValidEnum(availableSizes)) return res.status(400).send({ status: false, message: 'Please SELECT a valid availableSize from list ["XS", "S", "M", "L", "X", "XL", "XXL" ]' })
+            newData['availableSizes'] = availableSizes
+        }
+        if (validator.isValidBody(installments)) {
+            if (!validator.isValidInstallment(installments)) return res.status(400).send({ status: false, message: "Please Enter a valid installments, upto 99 months and in 2 digits support only" })
+            newData['installments'] = installments
+        }
+
+    }
+    catch (err) {
+        res.status(500).send({ status: false, message: error.message })
+    }
+}
+
+

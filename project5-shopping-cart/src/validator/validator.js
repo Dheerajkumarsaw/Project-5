@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const isValidBody = function (value) {
     if (typeof value === "undefined" || typeof value === null) return false
     if (typeof value === "string" && value.trim().length === 0) return false
+    if (typeof value === "Number" && value.trim().length === 0) return false
     return true
 };
 
@@ -31,7 +32,7 @@ const isValidPass = function (password) {
 };
 
 const isValidName = function (value) {
-    const regx = /^[A-Za-z ]{2,10}$/
+    const regx = /^[A-Za-z ]{2,}$/
     return regx.test(value)
 };
 
@@ -44,4 +45,8 @@ const isValidEnum = function (value) {
     return ["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(value) !== -1
 }
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum }
+const isValidBoolean = function (value) {
+    return ["true","false"].indexOf(value) !== -1
+}
+
+module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean}
