@@ -47,11 +47,15 @@ const createProduct = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Enter valide details in style" })
             }
         }
-        const size =JSON.parse(availableSizes)
-        console.log(size)
-        if (!validator.isValidBody(availableSizes) || !validator.isValidEnum(size.map(el=>el))) {
+        if (!validator.isValidBody(availableSizes) || !validator.isValidEnum(availableSizes)) {
             return res.status(400).send({ status: false, message: `Enter Any of These only "S", "XS", "M", "X", "L", "XXL", "XL"` })
-        }
+        }// } else {
+        //     const size = JSON.parse(availableSizes)
+        //     for (let i = 0; i < size.length; i++)
+        //         if (!validator.isValidEnum(size[i])) {
+        //             return res.status(400).send({ status: false, message: `${size[i]} not allowed! Enter Any of These only "S", "XS", "M", "X", "L", "XXL", "XL" ` })
+        //         }
+        // }
         if (!validator.isValidBody(installments) || !validator.isValidInstallment(installments)) {
             return res.status(400).send({ status: false, message: "Enter installments only Number " })
         }
