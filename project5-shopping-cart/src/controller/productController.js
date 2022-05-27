@@ -7,6 +7,7 @@ const createProduct = async function (req, res) {
     try {
         const requestBody = req.body;
         const requestFiles = req.files;
+        // console.log(requestFiles)
         if (Object.keys(requestBody).length == 0) {
             return res.status(400).send({ status: false, message: "Enter data in body" })
         }
@@ -46,10 +47,12 @@ const createProduct = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Enter valide details in style" })
             }
         }
-        if (!validator.isValidBody(availableSizes) || !validator.isValidEnum(availableSizes)) {
+        const size =JSON.parse(availableSizes)
+        console.log(size)
+        if (!validator.isValidBody(availableSizes) || !validator.isValidEnum(size.map(el=>el))) {
             return res.status(400).send({ status: false, message: `Enter Any of These only "S", "XS", "M", "X", "L", "XXL", "XL"` })
         }
-        if (!validator.isValidBody(installments) || !/^[0-9]$/.test(installments)) {
+        if (!validator.isValidBody(installments) || !validator.isValidInstallment(installments)) {
             return res.status(400).send({ status: false, message: "Enter installments only Number " })
         }
         if (requestBody.isDeleted) {
@@ -70,6 +73,7 @@ const createProduct = async function (req, res) {
         res.status(500).send({ status: false, message: error.message })
     }
 };
+
 
 module.exports = { createProduct, }
 
