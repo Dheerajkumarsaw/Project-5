@@ -54,5 +54,12 @@ const isValidBoolean = function (value) {
     return ["true","false"].indexOf(value) !== -1
 }
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean, isValidInstallment}
+const validQuantity = function isInteger(value) {
+    if (value < 1) return false
+    if (isNaN(Number(value))) return false
+    if (value % 1 == 0) return true
+}
+
+
+module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean, isValidInstallment, validQuantity}
 

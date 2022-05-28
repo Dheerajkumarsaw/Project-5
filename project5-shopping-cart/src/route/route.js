@@ -18,11 +18,8 @@ router.put("/user/:userId/profile", MW.authentication, userController.updateUser
 //Feature II - Product's Api
 router.post("/products", productController.createProduct);
 
-router.get("/products", productController.getSpecificProduct)
+router.get("/products", productController.getProducts)
 
-router.get("/products/:productId", productController.getProductById)
-
-router.put("/products/:productId", productController.updateProduct)
 
 router.delete("/products/:productId", productController.deleteProduct)
 
