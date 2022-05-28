@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require("../controller/userController")
 const MW = require('../middleware/auth');
 const productController = require("../controller/productController")
+const cartController = require("../controller/cartController")
 
 //Feature I - User's Api
 router.post("/register", userController.createUser);
@@ -17,12 +18,15 @@ router.put("/user/:userId/profile", MW.authentication, userController.updateUser
 //Feature II - Product's Api
 router.post("/products", productController.createProduct);
 
-router.get("/products", productController.getSpecificProduct)
-
-router.get("/products/:productId", productController.getProductById)
+router.get("/products", productController.getProducts)
 
 router.put("/products/:productId", productController.updateProduct)
 
 router.delete("/products/:productId", productController.deleteProduct)
+
+
+//Feature III - Cart's Api
+
+router.post("/users/:userId/cart",cartController.cart )
 
 module.exports = router

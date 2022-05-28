@@ -197,7 +197,7 @@ const updateProduct = async function (req, res) {
         if(!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
         
         //-----------------Empty Body check------------------
-        if(Object.keys(requestBody).length==0 && !file){
+        if(requestBody && !file){
             return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
         }
         //-----------------------Destructuring------------------------
@@ -225,37 +225,43 @@ const updateProduct = async function (req, res) {
             if (!validator.isValidDeciNum(price)) return res.status(400).send({ status: false, message: "Please Enter a valid price." })
             newData['price'] = price
         }
-
+        //-------response for no need to update things-------
         if (currencyId) return res.status(400).send({ status: false, message:"Currency Id doesn't need to update, because it has only 'INR'(indian rupee) Option, fill other fields besides"})
         
         if (currencyFormat) return res.status(400).send({ status: false, message:"Currency Format doesn't need to update, because it has only One symbol, fill other fields besides"})
-
+        //---------------isFreeShopping-----------------
         if (validator.isValidBody(isFreeShipping)) {
             if (!validator.isValidBoolean(isFreeShipping)) return res.status(400).send({ status: false, message: "isFreeShipping needs to be a Boolean" })
             newData['isFreeShipping'] = isFreeShipping
         }
-
-        if(file.length.value > 0){
+        //------------------file URL----------------------
+        if(file.length > 0){
             const uploadedURL = await saveFile.uploadFiles(file[0])
             newData['productImage'] = uploadedURL
         }
+        //-----------------Style-----------------------
         if (validator.isValidBody(style)) {
             if (!validator.isValidName(style)) return res.status(400).send({ status: false, message: "Please Enter a valid style, should contain at least 2 characters for word formation" })
             newData['style'] = style
         }
-        // if (validator.isValidBody(availableSizes)) {
-        //     // if (!validator.isValidEnum(availableSizes)) return res.status(400).send({ status: false, message: 'Please SELECT a valid availableSize from list ["XS", "S", "M", "L", "X", "XL", "XXL" ]' })
-        // }
-        let availableSizes = JSON.parse(requestBody.availableSizes)
-
+        //--------------Available Sizes------------------
+        if(validator.isValidBody(requestBody.availableSizes)){
+            let availableSizes = JSON.parse(requestBody.availableSizes)
+            for(let i=0; i<availableSizes.length; i++){
+                if(!validator.isValidEnum(availableSizes[i])){
+                    return res.status(400).send({status:false, message: `${availableSizes[i]} not allowed!, Please enter Any of ["S", "XS", "M", "X", "L", "XXL", "XL"]` })
+                }
+            }
+        }
+        //-----------------Installments-----------------
         if (validator.isValidBody(installments)) {
             if (!validator.isValidInstallment(installments)) return res.status(400).send({ status: false, message: "Please Enter a valid installments, upto 99 months and in 2 digits support only" })
             newData['installments'] = installments
         }
-        // //--------------Check for existed name------------
-        // const exixtCheck = await productModel.find({title: title})
-        // if(exixtCheck) return res.status(400).send({status: true, message: "Entered 'title' already exists, Please select another title name"})
         
+        //--------------Check for existed name------------
+        const exixtCheck = await productModel.find({title: title})
+        if(exixtCheck) return res.status(400).send({status: true, message: "Entered 'title' already exists, Please select another title name"})
 
 
         //---------------Updating things---------------
@@ -265,7 +271,7 @@ const updateProduct = async function (req, res) {
             {new: true})
         // const updatething = await productModel.findOneAndUpdate(
         //     {_id:productId, isDeleted: false},
-        //     {newData,$addToSet: {availableSizes}},
+        //     {newData,$addToset: {availableSizes}},
         //     {new: true})
         res.status(200).send({status: true, message:"Success", data: updatething})    
 
