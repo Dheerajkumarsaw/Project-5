@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const isValidBody = function (value) {
-    if (typeof value === "undefined" || typeof value === null) return false
+    if (typeof value == "undefined" || typeof value === null) return false
     if (typeof value === "string" && value.trim().length === 0) return false
     if (typeof value === "Number" && value.trim().length === 0) return false
     return true
@@ -32,7 +32,7 @@ const isValidPass = function (password) {
 };
 
 const isValidName = function (value) {
-    const regx = /^[A-Za-z ]{2,}$/
+    const regx = /^[A-Za-z0-9 ]{2,}$/
     return regx.test(value)
 };
 
