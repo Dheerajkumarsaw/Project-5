@@ -193,4 +193,4 @@ const deleteCart = async function (req, res) {
     }
 }
 
-module.exports = { createCart, getCart, deleteCart }
+module.exports = { createCart, getCart, deleteCart, updateCart }
