@@ -118,9 +118,9 @@ const getCart = async function (req, res) {
         if (!existCart) {
             return res.status(404).send({ status: false, message: `Cart Does Not Exist for this ${userId} userId` })
         }
-        if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: "Unautherize to make changes" })
-        }
+        // if (req.loggedInUser != userId) {
+        //     return res.status(401).send({ status: false, message: "Unautherize to make changes" })
+        // }
         const productDetails = []
         const productsIds = existCart.items
         for (let i = 0; i < productsIds.length; i++) {
@@ -182,11 +182,11 @@ const deleteCart = async function (req, res) {
         if (!existCart || existCart.totalItems == 0) {
             return res.status(404).send({ status: false, message: "Cart Does Not Exist Or Allready Deleted" })
         }
-        if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: "Unautrherize To Make Changes" })
-        }
-        await cartModel.findOneAndUpdate({ productId: productId }, { $set: { items: 0, totalItems: 0, totalPrice: 0 } }, { new: true });
-        res.status(204).send({ status: false, message: "Cart Deleted SuccessFully" })
+        // if (req.loggedInUser != userId) {
+        //     return res.status(401).send({ status: false, message: "Unautrherize To Make Changes" })
+        // }
+        await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [0], totalItems: 0, totalPrice: 0 } }, { new: true });
+        res.status(200).send({ status: false, message: "Cart Deleted SuccessFully" })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
