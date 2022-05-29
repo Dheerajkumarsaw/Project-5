@@ -141,7 +141,10 @@ const updateCart = async function(req, res){
     try{
         let userId= req.params.userId
         let requestBody= req.body;
+        let cartId = requestBody.cartId
+
         const {productId, removeProduct, items} = requestBody // Destructuring
+
         //-------------userId exist check and validation-------------------
         if(validator.isValidObjectId(userId)){
             return res.status(400).send({status:false, message:"Please Provide a valid User Id in path params"})
@@ -150,6 +153,10 @@ const updateCart = async function(req, res){
         if(!userExist){
             return res.status(404).send({status:false, message:"User ID not found by ID given in params"})
         }
+        //------------ Authorization Here -------------
+
+
+
         //-------------------RequestBody empty check---------------------
         if(Object.keys(reqBody).length == 0) {
             return res.status(400).send({ status: false, message: "Please provide mandatory field in request body to update product" });
@@ -157,9 +164,20 @@ const updateCart = async function(req, res){
         if(!Object.keys(items).length ==0){
             return res.status(400).send({ status: false, message: "Please provide items in request body to update product" });
         }
+        //------------------Check and validate Cart ID------------------------
+        if(Object.keys(cartId).length==0 || !validator.isValidObjectId(cartId)){
+            return res.status(400).send({status: false, message: "Please provide a valid cartId"})
+        }
+        //------------------DB call for cart existance-------------------------
+        const cartExist = await cartModel.findOne({_id: cartId})
+        if(!cartExist){
+            return res.status(404).send({status:false, message:"cart does not exist with given cartId"})
+        }
+        //-----------------Remove Products--------------------
 
 
-
+        //--------------- Push Updated things to DB ---------------
+    
         
 
     }
