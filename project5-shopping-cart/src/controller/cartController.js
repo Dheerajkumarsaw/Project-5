@@ -9,6 +9,11 @@ const cart = async (req, res)=>{
     try {
         let reqBody = req.body
         const userId = req.params.userId
+
+        if(Object.keys(reqBody).length==0){
+            return res.status(400).send({status:false, message:"Empty request body"})
+        }
+
         const items = JSON.parse(reqBody.items)
 
     
@@ -20,11 +25,6 @@ const cart = async (req, res)=>{
         if(!isUser){
             return res.status(404).send({status:false, message:"No user exist with given user Id"})
         }
-
-        if(Object.keys(reqBody).length == 0) {
-            return res.status(400).send({ status: false, message: "Data should be provide" });
-        }
-        console.log(items)
 
         if(validator.isValidBody(items)) {
            if(validator.isValidBody(items.productId)){
@@ -66,7 +66,7 @@ const cart = async (req, res)=>{
             let existInCart = await cartModel.findOneAndUpdate({ userId: userId, "items.productId": items.productId }, {totalPrice: total,
                 $inc: {
                     
-                    "items.$.quantity": +1,
+                    "items.$.quantity": items.quantity,
                 },
             }, { new: true });
           
@@ -76,7 +76,11 @@ const cart = async (req, res)=>{
             
             let updatedcart = await cartModel.findOneAndUpdate({userId:userId},
                  {$push:{items:{productId:items.productId, quantity:parseInt(items.quantity)}},
-                 totalItems:count, totalPrice:total}, {new:true})
+                 $inc: {
+                    
+                    "totalItems": +1,
+
+                }, totalPrice:total}, {new:true})
             return res.status(200).send({status:true, message:"cart Updated", data:updatedcart})
         }
       
@@ -88,7 +92,7 @@ const cart = async (req, res)=>{
                 productId:items.productId,
                 quantity:parseInt(items.quantity)
             }],
-            totalItems:items.quantity,
+            totalItems: 1,
             totalPrice:totalPrice
 
         }

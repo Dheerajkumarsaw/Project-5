@@ -230,6 +230,7 @@ const updateUser = async function (req, res) {
         }
         //--------Authentication here-----------
 
+
         if (req.loggedInUser != userId) {
             return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
         }
@@ -243,6 +244,7 @@ const updateUser = async function (req, res) {
         return res.status(200).send({ status: true, message: "user profile updated", data: updatething })
     }
     catch (err) {
+        console.log(err.message);
         res.status(500).send({ status: false, Error: err.message })
     }
 }
