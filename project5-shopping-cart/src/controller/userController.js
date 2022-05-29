@@ -126,8 +126,9 @@ const loginUser = async function (req, res) {
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
-}
-const getUser = async (req, res) => {
+};
+// ==============================  GET  USER  LIST    =======================================
+const getUser = async function (req, res) {
     try {
         const userId = req.params.userId
 
@@ -151,7 +152,7 @@ const getUser = async (req, res) => {
     }
 }
 
-//----------------------PUT Api's------------------------
+//----------------------       PUT Api      ------------------------
 const updateUser = async function (req, res) {
     try {
         const requestBody = req.body
@@ -161,14 +162,15 @@ const updateUser = async function (req, res) {
         //---------------dB call for UserID check-----------------
         const userCheck = await userModel.findOne({ _id: userId })
         if (!userCheck) return res.status(404).send({ status: true, message: "No user found by User Id given in path params" })
-
+        if (requestBody && !file) {
+            return res.status(400).send({ status: false, message: "Enter Atleast One Field to update" })
+        }
         //-------------Empty Validation------------
         if (Object.keys(requestBody).length == 0) {
-            return res.status(400).send({ status: false, message: "Please fill areas to update" })
+            return res.status(400).send({ status: false, message: "Please fill Atleast to update" })
         }
         //-------------Destructuring--------------
         const { fname, lname, email, phone, address, password } = requestBody
-
         //-----------validation-------------
         if (validator.isValidBody(fname)) {
             if (!validator.isValidName(fname)) return res.status(400).send({ status: false, message: "Please Enter a valid First Name" })
@@ -200,44 +202,57 @@ const updateUser = async function (req, res) {
         //-----------------address's Input and validation check-------------------
         if (validator.isValidBody(address)) {
             const parsedAddress = JSON.parse(address) // Parsing to object form
-            console.log(parsedAddress)
-            if (parsedAddress.shipping) {
-                if (parsedAddress.shipping.street) {
+            // console.log(parsedAddress)
+            if ("shipping" in parsedAddress) {
+                if (!validator.isValidBody(parsedAddress.shipping)) {
+                    return res.status(400).send({ status: false, message: "Enter shiping Details To Update" })
+                }
+                if ("street" in parsedAddress.shipping) {
+                    if (!validator.isValidBody(parsedAddress.shipping.street)) {
+                        return res.status(400).send({ status: false, message: "Enter shiping street Details To Update" })
+                    }
                     newData['address.shipping.street'] = parsedAddress.shipping.street
                 }
-                if (parsedAddress.shipping.city) {
-                    if (!validator.isValidName(parsedAddress.shipping.city)) return res.status(400).send({ status: false, message: "Please Enter a valid City" })
+                if ("city" in parsedAddress.shipping) {
+                    if (!validator.isValidName(parsedAddress.shipping.city) || !validator.isValidBody(parsedAddress.shipping.city))
+                        return res.status(400).send({ status: false, message: "Please Enter a valid City" })
                     newData["address.shipping.city"] = parsedAddress.shipping.city
                 }
-                if (parsedAddress.shipping.pincode) {
-                    if (!validator.isValidPin(parsedAddress.shipping.pincode)) return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
+                if ("pincode" in parsedAddress.shipping) {
+                    if (!validator.isValidPin(parsedAddress.shipping.pincode) || !validator.isValidBody(parsedAddress.shipping.pincode))
+                        return res.status(400).send({ status: false, message: "Please Enter a valid  shipping PinCode" })
                     newData['address.shipping.pincode'] = parsedAddress.shipping.pincode
                 }
             }
-            if (parsedAddress.billing) {
-                if (parsedAddress.billing.street) {
+            if ("billing" in parsedAddress) {
+                if (!validator.isValidBody(parsedAddress.billing)) {
+                    return res.status(400).send({ status: false, message: "Enter billing Details To Update" })
+                }
+                if ("street" in parsedAddress.billing) {
+                    if (!validator.isValidBody(parsedAddress.billing.street)) {
+                        return res.status(400).send({ status: false, message: "Enter billing street Details To Update" })
+                    }
                     newData['address.billing.street'] = parsedAddress.billing.street
                 }
-                if (parsedAddress.billing.city) {
-                    if (!validator.isValidName(parsedAddress.billing.city)) return res.status(400).send({ status: false, message: "Please Enter a valid City" })
+                if ("city" in parsedAddress.billing) {
+                    if (!validator.isValidName(parsedAddress.billing.city) || !validator.isValidBody(parsedAddress.billing.city))
+                        return res.status(400).send({ status: false, message: "Please Enter a valid billing City" })
                     newData['address.billing.city'] = parsedAddress.billing.city
                 }
-                if (parsedAddress.billing.pincode) {
-                    if (!validator.isValidPin(parsedAddress.billing.pincode)) return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
+                if ("pincode" in parsedAddress.billing) {
+                    if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode))
+                        return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
                     newData['address.billing.pincode'] = parsedAddress.billing.pincode
                 }
             }
         }
         //--------Authentication here-----------
-
         if (req.loggedInUser != userId) {
             return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
         }
-
         //---------Already Exixts for phone and email data --DB Check-----
         const doublicateCheck = await userModel.find({ $or: [{ email: email, phone: phone }] })
         if (doublicateCheck.length > 0) return res.status(400).send({ status: false, message: "Please Check wheather phone number and email Id already exists" })
-
         //---------updation perform in DB-------------
         const updatething = await userModel.findOneAndUpdate({ _id: userId }, newData, { new: true })
         return res.status(200).send({ status: true, message: "user profile updated", data: updatething })
