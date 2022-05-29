@@ -6,6 +6,7 @@ const authentication = async function (req, res, next) {
     try {
         let token = req.headers.authorization
         if (!token) return res.status(400).send({ status: false, message: "Token not found! " })
+        token = token.split(" ")[1]
          token = req.headers.authorization.split(" ")[1]
         // console.log(token)
 
