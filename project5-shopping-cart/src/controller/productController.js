@@ -87,24 +87,24 @@ const createProduct = async function (req, res) {
 
 // GET  PRODUCT BY  ID 
 
-const getProductById = async (req,res)=>{
+const getProductById = async (req, res) => {
     try {
-        const productId  = req.params.productId
-    
-        if(!validator.isValidObjectId(productId)){
-            return res.status(400).send({status:false, message:"Invalid product Id"})
+        const productId = req.params.productId
+
+        if (!validator.isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "Invalid product Id" })
         }
-    
-        const isProductExist = await productModel.findOne({_id:productId, isDeleted:false})
-    
-        if(!isProductExist){
-            return res.status(404).send({status:false, message:"Product Not found! or Already Deleted"})
+
+        const isProductExist = await productModel.findOne({ _id: productId, isDeleted: false })
+
+        if (!isProductExist) {
+            return res.status(404).send({ status: false, message: "Product Not found! or Already Deleted" })
         }
-    
-        return res.status(200).send({status:true, message:"Product", data:isProductExist})
-        
+
+        return res.status(200).send({ status: true, message: "Product", data: isProductExist })
+
     } catch (error) {
-        res.status(500).send({status:false, message:error.message})
+        res.status(500).send({ status: false, message: error.message })
     }
 }
 
@@ -187,7 +187,7 @@ const updateProduct = async function (req, res) {
         const productId = req.params.productId
         const file = req.files
         let newData = {}
-        console.log(Object.keys(requestBody), file)
+        console.log(file)
 
         //-------------dB call for product existance--------------------
         const productCheck = await productModel.findOne({ _id: productId, isDeleted: false })
@@ -198,7 +198,7 @@ const updateProduct = async function (req, res) {
             return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
         }
         //-----------------------Destructuring------------------------
-        const { title, description, price, currencyId, currencyFormat, isFreeShipping,availableSizes, productImage, style, installments, isDeleted } = requestBody
+        const { title, description, price, currencyId, currencyFormat, isFreeShipping, availableSizes, productImage, style, installments, isDeleted } = requestBody
 
         //-------------------Deleted Denied---------------------
         if (validator.isValidBody(isDeleted)) return res.status(400).send({ status: false, message: "You are not allowed to perform delete Operation in update API, you need to hit Delete API" })
@@ -243,15 +243,17 @@ const updateProduct = async function (req, res) {
             newData['style'] = style
         }
         //--------------Available Sizes------------------
-        if(requestBody.availableSizes){
-        if (validator.isValidBody(requestBody.availableSizes)) {
-            let availableSizes = JSON.parse(requestBody.availableSizes)
-            for (let i = 0; i < availableSizes.length; i++) {
-                if (!validator.isValidEnum(availableSizes[i])) {
-                    return res.status(400).send({ status: false, message: `${availableSizes[i]} not allowed!, Please enter Any of ["S", "XS", "M", "X", "L", "XXL", "XL"]` })
+        if (requestBody.availableSizes) {
+            if (validator.isValidBody(requestBody.availableSizes)) {
+                let availableSizes = JSON.parse(requestBody.availableSizes)
+                for (let i = 0; i < availableSizes.length; i++) {
+                    if (!validator.isValidEnum(availableSizes[i])) {
+                        return res.status(400).send({ status: false, message: `${availableSizes[i]} not allowed!, Please enter Any of ["S", "XS", "M", "X", "L", "XXL", "XL"]` })
+                    }
                 }
+                newData['availableSizes']= availableSizes
             }
-        }}
+        }
         //-----------------Installments-----------------
         if (validator.isValidBody(installments)) {
             if (!validator.isValidInstallment(installments)) return res.status(400).send({ status: false, message: "Please Enter a valid installments, upto 99 months and in 2 digits support only" })
@@ -266,7 +268,7 @@ const updateProduct = async function (req, res) {
         //---------------Updating things---------------
         const updatething = await productModel.findOneAndUpdate(
             { _id: productId, isDeleted: false },
-            { newData, $set: { availableSizes } },
+            { $set: newData },
             { new: true })
         // const updatething = await productModel.findOneAndUpdate(
         //     {_id:productId, isDeleted: false},
@@ -299,6 +301,6 @@ const deleteProduct = async function (req, res) {
     }
 }
 
-module.exports = { createProduct,getProductById, getByQueryFilter, updateProduct, deleteProduct }
+module.exports = { createProduct, getProductById, getByQueryFilter, updateProduct, deleteProduct }
 // module.exports = {createProduct, getSpecificProduct, getProductById, updateProduct, deleteProduct}
 
