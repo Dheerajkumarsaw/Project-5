@@ -95,10 +95,10 @@ const getProductById = async (req,res)=>{
             return res.status(400).send({status:false, message:"Invalid product Id"})
         }
     
-        const isProductExist = await productModel.findById(productId)
+        const isProductExist = await productModel.findOne({_id:productId, isDeleted:false})
     
         if(!isProductExist){
-            return res.status(404).send({status:false, message:"Product Not found!"})
+            return res.status(404).send({status:false, message:"Product Not found! or Already Deleted"})
         }
     
         return res.status(200).send({status:true, message:"Product", data:isProductExist})
