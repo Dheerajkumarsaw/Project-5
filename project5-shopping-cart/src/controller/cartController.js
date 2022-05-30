@@ -117,6 +117,7 @@ const getCart = async function (req, res) {
         if (!existCart) {
             return res.status(404).send({ status: false, message: `Cart Does Not Exist for this ${userId} userId` })
         }
+        //   --------------------   Autherization  Here    ---------------------------
         // if (req.loggedInUser != userId) {
         //     return res.status(401).send({ status: false, message: "Unautherize to make changes" })
         // }
@@ -135,10 +136,55 @@ const getCart = async function (req, res) {
     }
 };
 
-// ====================================  PUT  API  =======================================
+//===============================Update Api===============================
+const updateCart = async function(req, res){
+    try{
+        let userId= req.params.userId
+        let requestBody= req.body;
+        let cartId = requestBody.cartId
+
+        const {productId, removeProduct, items} = requestBody // Destructuring
+
+        //-------------userId exist check and validation-------------------
+        if(validator.isValidObjectId(userId)){
+            return res.status(400).send({status:false, message:"Please Provide a valid User Id in path params"})
+        }
+        let userExist= await userModel.findOne({_id : userId})
+        if(!userExist){
+            return res.status(404).send({status:false, message:"User ID not found by ID given in params"})
+        }
+        //------------ Authorization Here -------------
 
 
-// ANKIT BAHI YAHAN PE  PUT  API PUSH KRO STRUCTURE KRKE  SATH  ME EXPORT BHI KR DENA
+
+        //-------------------RequestBody empty check---------------------
+        if(Object.keys(reqBody).length == 0) {
+            return res.status(400).send({ status: false, message: "Please provide mandatory field in request body to update product" });
+        }
+        if(!Object.keys(items).length ==0){
+            return res.status(400).send({ status: false, message: "Please provide items in request body to update product" });
+        }
+        //------------------Check and validate Cart ID------------------------
+        if(Object.keys(cartId).length==0 || !validator.isValidObjectId(cartId)){
+            return res.status(400).send({status: false, message: "Please provide a valid cartId"})
+        }
+        //------------------DB call for cart existance-------------------------
+        const cartExist = await cartModel.findOne({_id: cartId})
+        if(!cartExist){
+            return res.status(404).send({status:false, message:"cart does not exist with given cartId"})
+        }
+        //-----------------Remove Products--------------------
+
+
+        //--------------- Push Updated things to DB ---------------
+    
+        
+
+    }
+    catch(err){
+        res.status(500).send({status: false, message: err.message})
+    }
+}
 
 
 
@@ -154,6 +200,7 @@ const deleteCart = async function (req, res) {
         if (!existCart || existCart.totalItems == 0) {
             return res.status(404).send({ status: false, message: "Cart Does Not Exist Or Allready Deleted" })
         }
+        //  --------   Autherization  Here   ------------
         // if (req.loggedInUser != userId) {
         //     return res.status(401).send({ status: false, message: "Unautrherize To Make Changes" })
         // }
@@ -165,4 +212,4 @@ const deleteCart = async function (req, res) {
     }
 }
 
-module.exports = { createCart, getCart, deleteCart }
+module.exports = { createCart, getCart, deleteCart, updateCart }

@@ -18,7 +18,7 @@ router.put("/user/:userId/profile", MW.authentication, userController.updateUser
 //Feature II - Product's Api
 router.post("/products", productController.createProduct);
 
-router.get("/products", productController.getProducts)
+router.get("/products", productController.getByQueryFilter)
 
 router.get("/products/:productId", productController.getProductById)
 
@@ -33,7 +33,7 @@ router.post("/users/:userId/cart", cartController.createCart)
 
 router.get("/users/:userId/cart", cartController.getCart)
 
-// yahan  put api banao
+router.put('//users/:userId/cart', cartController.updateCart)
 
 router.delete("/users/:userId/cart", cartController.deleteCart)
 
