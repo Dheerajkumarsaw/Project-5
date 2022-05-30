@@ -118,6 +118,7 @@ const getCart = async function (req, res) {
         if (!existCart) {
             return res.status(404).send({ status: false, message: `Cart Does Not Exist for this ${userId} userId` })
         }
+        //   --------------------   Autherization  Here    ---------------------------
         // if (req.loggedInUser != userId) {
         //     return res.status(401).send({ status: false, message: "Unautherize to make changes" })
         // }
@@ -200,6 +201,7 @@ const deleteCart = async function (req, res) {
         if (!existCart || existCart.totalItems == 0) {
             return res.status(404).send({ status: false, message: "Cart Does Not Exist Or Allready Deleted" })
         }
+        //  --------   Autherization  Here   ------------
         // if (req.loggedInUser != userId) {
         //     return res.status(401).send({ status: false, message: "Unautrherize To Make Changes" })
         // }
