@@ -130,7 +130,9 @@ const getCart = async function (req, res) {
         // const productDetails = await productModel.find()
         //// kaise access kre ek cart me multiple product k id hoga
 
-        res.status(200).send({ status: true, message: "Cart Summary here", data: productDetails })
+        // res.status(200).send({ status: true, message: "Cart Summary here", data: productDetails })
+        // res.status(200).send({ status: true, message: "Cart Summary here", data: existCart })
+        res.status(200).send({ status: true, message: "Cart Summary here", data: [existCart, productDetails] })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -138,52 +140,52 @@ const getCart = async function (req, res) {
 };
 
 //===============================Update Api===============================
-const updateCart = async function(req, res){
-    try{
-        let userId= req.params.userId
-        let requestBody= req.body;
+const updateCart = async function (req, res) {
+    try {
+        let userId = req.params.userId
+        let requestBody = req.body;
         let cartId = requestBody.cartId
 
-        const {productId, removeProduct, items} = requestBody // Destructuring
+        const { productId, removeProduct, items } = requestBody // Destructuring
 
         //-------------userId exist check and validation-------------------
-        if(validator.isValidObjectId(userId)){
-            return res.status(400).send({status:false, message:"Please Provide a valid User Id in path params"})
+        if (validator.isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "Please Provide a valid User Id in path params" })
         }
-        let userExist= await userModel.findOne({_id : userId})
-        if(!userExist){
-            return res.status(404).send({status:false, message:"User ID not found by ID given in params"})
+        let userExist = await userModel.findOne({ _id: userId })
+        if (!userExist) {
+            return res.status(404).send({ status: false, message: "User ID not found by ID given in params" })
         }
         //------------ Authorization Here -------------
 
 
 
         //-------------------RequestBody empty check---------------------
-        if(Object.keys(reqBody).length == 0) {
+        if (Object.keys(reqBody).length == 0) {
             return res.status(400).send({ status: false, message: "Please provide mandatory field in request body to update product" });
         }
-        if(!Object.keys(items).length ==0){
+        if (!Object.keys(items).length == 0) {
             return res.status(400).send({ status: false, message: "Please provide items in request body to update product" });
         }
         //------------------Check and validate Cart ID------------------------
-        if(Object.keys(cartId).length==0 || !validator.isValidObjectId(cartId)){
-            return res.status(400).send({status: false, message: "Please provide a valid cartId"})
+        if (Object.keys(cartId).length == 0 || !validator.isValidObjectId(cartId)) {
+            return res.status(400).send({ status: false, message: "Please provide a valid cartId" })
         }
         //------------------DB call for cart existance-------------------------
-        const cartExist = await cartModel.findOne({_id: cartId})
-        if(!cartExist){
-            return res.status(404).send({status:false, message:"cart does not exist with given cartId"})
+        const cartExist = await cartModel.findOne({ _id: cartId })
+        if (!cartExist) {
+            return res.status(404).send({ status: false, message: "cart does not exist with given cartId" })
         }
         //-----------------Remove Products--------------------
 
 
         //--------------- Push Updated things to DB ---------------
-    
-        
+
+
 
     }
-    catch(err){
-        res.status(500).send({status: false, message: err.message})
+    catch (err) {
+        res.status(500).send({ status: false, message: err.message })
     }
 }
 

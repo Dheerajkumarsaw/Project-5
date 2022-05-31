@@ -97,7 +97,7 @@ const updateProduct = async function (req, res) {
         if (!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
 
         //-----------------Empty Body check------------------
-        if (requestBody && !file) {
+        if (Object.keys(requestBody).length !=0 && !file) {
             return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
         }
         //-----------------------Destructuring------------------------
