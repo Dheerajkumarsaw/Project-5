@@ -28,7 +28,8 @@ const cartSchema = new mongoose.Schema({
     totalItems: {
         type: Number,
         required: true
-    }
+    },
+    
 
 },
     { timestamps: true }
