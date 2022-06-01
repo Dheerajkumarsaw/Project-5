@@ -129,7 +129,9 @@ const getCart = async function (req, res) {
         // const productDetails = await productModel.find()
         //// kaise access kre ek cart me multiple product k id hoga
 
-        res.status(200).send({ status: true, message: "Cart Summary here", data: productDetails })
+        // res.status(200).send({ status: true, message: "Cart Summary here", data: productDetails })
+        // res.status(200).send({ status: true, message: "Cart Summary here", data: existCart })
+        res.status(200).send({ status: true, message: "Cart Summary here", data: [existCart, productDetails] })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -148,9 +150,9 @@ const updateCart = async function(req, res){
         if(!validator.isValidObjectId(userId)){
             return res.status(400).send({status:false, message:"Please Provide a valid User Id in path params"})
         }
-        let userExist= await userModel.findOne({_id : userId})
-        if(!userExist){
-            return res.status(404).send({status:false, message:"User ID not found by ID given in params"})
+        let userExist = await userModel.findOne({ _id: userId })
+        if (!userExist) {
+            return res.status(404).send({ status: false, message: "User ID not found by ID given in params" })
         }
         //------------ Authorization Here -------------
 
@@ -171,18 +173,25 @@ const updateCart = async function(req, res){
         if(!cartExist){
             return res.status(404).send({status:false, message:"cart does not exist with given cartId"})
         }
+        console.log(cartExist)
         //------------------Product Existance check and validation-------------
         if(!validator.isValidBody(productId)|| !validator.isValidObjectId(productId)){
             return res.status(400).send({status: false, message: "Please provide a valid productId"})
         }
         const productCheck = await productModel.findOne({_id:productId, isDeleted:false})
-        if(!productCheck){
+        if(productCheck.isDeleted==true){
             return res.status(404).send({status: false, message:"product Does not exists in DataBase with given productId in request body"})
         }
         //-----------------Remove Products-------------------------
         if(!validator.isValidBody(removeProduct) || !validator.isValidBinary(removeProduct)){
             return res.status(400).send({status:false, message:"Please enter a valid removeProduct key with value either '0' or '1' . "})
         }
+        //---------------Check Product in Cart------------------
+        // for(let i=0; i<cart.items)
+        if(cartExist.item.productId===productId){
+            return res.status(404).send({status: false, message: "product ID doesnot exists in given Cart, so can't perform remove product operation."})
+        }
+        
         //---------------removeProduct is '1' -----------------
         if(removeProduct===1){
             cartUpdate = await cartModel.findOneAndUpdate({})
@@ -193,8 +202,8 @@ const updateCart = async function(req, res){
         console.log("done")
 
     }
-    catch(err){
-        res.status(500).send({status: false, message: err.message})
+    catch (err) {
+        res.status(500).send({ status: false, message: err.message })
     }
 }
 

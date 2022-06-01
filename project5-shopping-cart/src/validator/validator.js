@@ -51,7 +51,7 @@ const isValidInstallment = function (value) {
 }
 
 const isValidBoolean = function (value) {
-    return ["true","false"].indexOf(value) !== -1
+    return ["true", "false"].indexOf(value) !== -1
 }
 
 const isValidBinary = function (value) {
@@ -68,6 +68,10 @@ const validQuantity = function isInteger(value) {
     if (value % 1 == 0) return true
 }
 
+const isValidOrderEnum = function (value) {
+    return ["pending", "completed", "cancled"].indexOf(value) !== -1
+}
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean, isValidInstallment, isValidBinary, validQuantity, isValidFile}
+
+module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean, isValidInstallment, isValidBinary, validQuantity, isValidFile, isValidOrderEnum}
 
