@@ -187,19 +187,20 @@ const updateProduct = async function (req, res) {
         const productId = req.params.productId
         const file = req.files
         let newData = {}
-        console.log(file)
+        //console.log(file)
 
         //-------------dB call for product existance--------------------
         const productCheck = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
 
         //-----------------Empty Body check------------------
-        if (Object.keys(requestBody).length == 0 && !validator.isValidBody(file)) {
+        if (!validator.isValidBody(file) && Object.keys(requestBody).length == 0) {
             return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
         }
+
         if (Object.keys(requestBody).length > 0) {
             //-----------------------Destructuring------------------------
-            const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, installments, isDeleted } = requestBody
+            const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, installments, isDeleted } = requestBody
 
             //-------------------Deleted Denied---------------------
             if (validator.isValidBody(isDeleted)) return res.status(400).send({ status: false, message: "You are not allowed to perform delete updation in 'Update API', you need to hit Delete API" })
@@ -248,8 +249,9 @@ const updateProduct = async function (req, res) {
                         if (!validator.isValidEnum(availableSizes[i])) {
                             return res.status(400).send({ status: false, message: `${availableSizes[i]} not allowed!, Please enter Any of ["S", "XS", "M", "X", "L", "XXL", "XL"]` })
                         }
-                    }console.log(availableSizes)
-                    newData["availableSizes"]= availableSizes
+                    } console.log(availableSizes)
+                    newData["$addToSet"] = {}
+                    newData["$addToSet"]["availableSizes"] = availableSizes
                 }
             }
             //-----------------Installments-----------------
@@ -259,16 +261,14 @@ const updateProduct = async function (req, res) {
             }
         }
         //------------------file URL----------------------
-        if (!validator.isValidBody(file) && file===[]) {
-            if(Object.keys(file).length==0){
-                return res.status(400).send({status: false, message:"Please select a pic to upload as profile Picture"})
-            }
-            else{
+
+        if (validator.isValidFile(file.length)) {
             const uploadedURL = await saveFile.uploadFiles(file[0])
             newData['productImage'] = uploadedURL
-            }
         }
-
+        if(Object.keys(requestBody).length == 0 && !validator.isValidFile(file.length)){
+            return res.status(400).send({status: true, message:"The 'key' should have any file as 'value' Please, Provide it"})
+        }
 
         // //--------------Check for existed name------------
         // const exixtCheck = await productModel.find({ title: title })
@@ -276,14 +276,14 @@ const updateProduct = async function (req, res) {
 
 
         //---------------Updating things---------------
+        // const updatething = await productModel.findOneAndUpdate(
+        //     { _id: productId, isDeleted: false },
+        //     {$set: newData },
+        //     { new: true })
         const updatething = await productModel.findOneAndUpdate(
             { _id: productId, isDeleted: false },
-            {$set: newData },
+            newData,
             { new: true })
-        // const updatething = await productModel.findOneAndUpdate(
-        //     {_id:productId, isDeleted: false},
-        //     {newData,$addToset: {availableSizes}},
-        //     {new: true})
         res.status(200).send({ status: true, message: "Success", data: updatething })
 
     }

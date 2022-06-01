@@ -141,12 +141,11 @@ const updateCart = async function(req, res){
     try{
         let userId= req.params.userId
         let requestBody= req.body;
-        let cartId = requestBody.cartId
 
-        const {productId, removeProduct, items} = requestBody // Destructuring
+        const {productId, cartId, removeProduct} = requestBody // Destructuring
 
         //-------------userId exist check and validation-------------------
-        if(validator.isValidObjectId(userId)){
+        if(!validator.isValidObjectId(userId)){
             return res.status(400).send({status:false, message:"Please Provide a valid User Id in path params"})
         }
         let userExist= await userModel.findOne({_id : userId})
@@ -158,36 +157,46 @@ const updateCart = async function(req, res){
 
 
         //-------------------RequestBody empty check---------------------
-        if(Object.keys(reqBody).length == 0) {
-            return res.status(400).send({ status: false, message: "Please provide mandatory field in request body to update product" });
+        if(!validator.isValidBody(requestBody)) {
+            return res.status(400).send({ status: false, message: "Please provide mandatory field in request body to Remove products from cart" });
         }
-        if(!Object.keys(items).length ==0){
-            return res.status(400).send({ status: false, message: "Please provide items in request body to update product" });
-        }
-        //------------------Check and validate Cart ID------------------------
-        if(Object.keys(cartId).length==0 || !validator.isValidObjectId(cartId)){
+        // if(!Object.keys(items).length ==0){
+        //     return res.status(400).send({ status: false, message: "Please provide items in request body to Remove product" });
+        // }
+        //------------------Cart Exist check and validation-----------------------
+        if(!validator.isValidBody(cartId) || !validator.isValidObjectId(cartId)){
             return res.status(400).send({status: false, message: "Please provide a valid cartId"})
         }
-        //------------------DB call for cart existance-------------------------
         const cartExist = await cartModel.findOne({_id: cartId})
         if(!cartExist){
             return res.status(404).send({status:false, message:"cart does not exist with given cartId"})
         }
-        //-----------------Remove Products--------------------
-
+        //------------------Product Existance check and validation-------------
+        if(!validator.isValidBody(productId)|| !validator.isValidObjectId(productId)){
+            return res.status(400).send({status: false, message: "Please provide a valid productId"})
+        }
+        const productCheck = await productModel.findOne({_id:productId, isDeleted:false})
+        if(!productCheck){
+            return res.status(404).send({status: false, message:"product Does not exists in DataBase with given productId in request body"})
+        }
+        //-----------------Remove Products-------------------------
+        if(!validator.isValidBody(removeProduct) || !validator.isValidBinary(removeProduct)){
+            return res.status(400).send({status:false, message:"Please enter a valid removeProduct key with value either '0' or '1' . "})
+        }
+        //---------------removeProduct is '1' -----------------
+        if(removeProduct===1){
+            cartUpdate = await cartModel.findOneAndUpdate({})
+        }
 
         //--------------- Push Updated things to DB ---------------
     
-        
+        console.log("done")
 
     }
     catch(err){
         res.status(500).send({status: false, message: err.message})
     }
 }
-
-
-
 
 //  =======================================   DELETE   CART  ================================
 const deleteCart = async function (req, res) {
