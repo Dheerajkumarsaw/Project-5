@@ -162,7 +162,7 @@ const updateUser = async function (req, res) {
         //---------------dB call for UserID check-----------------
         const userCheck = await userModel.findOne({ _id: userId })
         if (!userCheck) return res.status(404).send({ status: true, message: "No user found by User Id given in path params" })
-        if (requestBody && !file) {
+        if (Object.keys(requestBody).length == 0 && !validator.isValidBody(file)) {
             return res.status(400).send({ status: false, message: "Enter Atleast One Field to update" })
         }
         //-------------Empty Validation------------
@@ -240,7 +240,8 @@ const updateUser = async function (req, res) {
                     newData['address.billing.city'] = parsedAddress.billing.city
                 }
                 if ("pincode" in parsedAddress.billing) {
-                    if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode ))
+                    if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode
+                         ))
                         return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
                     newData['address.billing.pincode'] = parsedAddress.billing.pincode
                 }
