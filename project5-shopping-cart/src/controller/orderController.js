@@ -92,13 +92,22 @@ const updateOrder = async function (req, res) {
         if (userId != existOrder.userId) {  // also  autherization
             return res.status(401).send({ status: false, message: "trying to make change by defferent user" })
         }
-        if (!existOrder.cancellable) {
-            return res.status(401).send({ status: false, message: "This order is not changeable" })
+        if (status == "cancled") {
+            if (!existOrder.cancellable) {
+                return res.status(400).send({ status: false, message: "This order is not cancellable " })
+            }
+            if (existOrder.cancellable) {
+                if (existOrder.status == status) {
+                    return res.status(400).send({ status: false, message: "You can not cancle order again" })
+                }
+                const updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: status }, { new: true })
+                return res.status(200).send({ status: true, message: "Updated status", data: updateOrder })
+            }
+        }
+        if (existOrder.status == "completed") {
+            return res.status(400).send({ status: false, message: "This order is not updatable " })
         }
         // Autherization
-        if (req.loggedInser != userId) {
-            return res.status(401).send({ status: false, message: "Unautherize to make changes" })
-        }
         const updatedOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: status }, { new: true })
         res.status(200).send({ status: true, message: "Updated", data: updatedOrder })
     }
