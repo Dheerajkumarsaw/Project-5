@@ -188,9 +188,6 @@ const updateCart = async function (req, res) {
     }
 }
 
-
-
-
 //  =======================================   DELETE   CART  ================================
 const deleteCart = async function (req, res) {
     try {
@@ -206,7 +203,7 @@ const deleteCart = async function (req, res) {
         // if (req.loggedInUser != userId) {
         //     return res.status(401).send({ status: false, message: "Unautrherize To Make Changes" })
         // }
-        await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [0], totalItems: 0, totalPrice: 0 } }, { new: true });
+        await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true });
         res.status(200).send({ status: false, message: "Cart Deleted SuccessFully" })
     }
     catch (error) {
