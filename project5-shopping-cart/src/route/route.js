@@ -4,6 +4,7 @@ const userController = require("../controller/userController")
 const MW = require('../middleware/auth');
 const productController = require("../controller/productController")
 const cartController = require("../controller/cartController")
+const orderController = require("../controller/orderController")
 
 //Feature I - User's Api
 router.post("/register", userController.createUser);
@@ -36,5 +37,9 @@ router.get("/users/:userId/cart", cartController.getCart)
 router.put('//users/:userId/cart', cartController.updateCart)
 
 router.delete("/users/:userId/cart", cartController.deleteCart)
+
+//Feature IV - Order's Api
+
+router.post("/users/:userId/orders",orderController.createOrder )
 
 module.exports = router
