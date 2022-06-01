@@ -42,4 +42,6 @@ router.delete("/users/:userId/cart", cartController.deleteCart)
 
 router.post("/users/:userId/orders",orderController.createOrder )
 
+router.put("/users/:userId/orders", orderController.updateOrder)
+
 module.exports = router

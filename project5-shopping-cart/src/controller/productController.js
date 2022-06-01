@@ -87,24 +87,44 @@ const createProduct = async function (req, res) {
 
 // GET  PRODUCT BY  ID 
 
-const getProductById = async (req,res)=>{
+const getProductById = async (req, res) => {
     try {
-        const productId  = req.params.productId
-    
-        if(!validator.isValidObjectId(productId)){
-            return res.status(400).send({status:false, message:"Invalid product Id"})
+        const productId = req.params.productId
+
+        //-------------dB call for product existance--------------------
+        const productCheck = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
+
+        //-----------------Empty Body check------------------
+        if (Object.keys(requestBody).length !=0 && !file) {
+            return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
         }
-    
-        const isProductExist = await productModel.findOne({_id:productId, isDeleted:false})
-    
-        if(!isProductExist){
-            return res.status(404).send({status:false, message:"Product Not found! or Already Deleted"})
+        //-----------------------Destructuring------------------------
+        const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, installments, isDeleted } = requestBody
+
+        //-------------------Deleted Denied---------------------
+        if (validator.isValidBody(isDeleted)) return res.status(400).send({ status: false, message: "You are not allowed to perform delete Operation in update API, you need to hit Delete API" })
+
+        // ------------------validation-------------------------
+        if (validator.isValidBody(title)) {
+
+            const titleExist = await productModel.findOne({ title: title }) // DB call for title existance
+            if (titleExist) return res.status(400).send({ status: false, message: "This 'title' name already existes!" })
+
+            if (!validator.isValidName(title)) return res.status(400).send({ status: false, message: "Please Enter a valid title should contain at least 2 characters for word formation" })
+            newData['title'] = title
         }
-    
-        return res.status(200).send({status:true, message:"Product", data:isProductExist})
-        
+
+        const isProductExist = await productModel.findOne({ _id: productId, isDeleted: false })
+
+        if (!isProductExist) {
+            return res.status(404).send({ status: false, message: "Product Not found! or Already Deleted" })
+        }
+
+        return res.status(200).send({ status: true, message: "Product", data: isProductExist })
+
     } catch (error) {
-        res.status(500).send({status:false, message:error.message})
+        res.status(500).send({ status: false, message: error.message })
     }
 }
 
@@ -179,94 +199,106 @@ const getByQueryFilter = async function (req, res) {
     }
 }
 
-//Upate Product by filters
 
+//=================PUT API=========================
 const updateProduct = async function (req, res) {
     try {
         const requestBody = req.body
         const productId = req.params.productId
         const file = req.files
         let newData = {}
-        console.log(Object.keys(requestBody), file)
+        console.log(file)
 
         //-------------dB call for product existance--------------------
         const productCheck = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
 
         //-----------------Empty Body check------------------
-        if (requestBody && !file) {
+        if (Object.keys(requestBody).length == 0 && !validator.isValidBody(file)) {
             return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
         }
-        //-----------------------Destructuring------------------------
-        const { title, description, price, currencyId, currencyFormat, isFreeShipping,availableSizes, productImage, style, installments, isDeleted } = requestBody
+        if (Object.keys(requestBody).length > 0) {
+            //-----------------------Destructuring------------------------
+            const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, installments, isDeleted } = requestBody
 
-        //-------------------Deleted Denied---------------------
-        if (validator.isValidBody(isDeleted)) return res.status(400).send({ status: false, message: "You are not allowed to perform delete Operation in update API, you need to hit Delete API" })
+            //-------------------Deleted Denied---------------------
+            if (validator.isValidBody(isDeleted)) return res.status(400).send({ status: false, message: "You are not allowed to perform delete updation in 'Update API', you need to hit Delete API" })
 
-        // ------------------validation-------------------------
-        if (validator.isValidBody(title)) {
+            // ------------------Title-------------------------
+            if (validator.isValidBody(title)) {
 
-            const titleExist = await productModel.findOne({ title: title }) // DB call for title existance
-            console.log(titleExist);
-            if (titleExist) return res.status(400).send({ status: false, message: "This 'title' name already existes!" })
+                const titleExist = await productModel.findOne({ title: title }) // DB call for title existance
+                console.log(titleExist);
+                if (titleExist) return res.status(400).send({ status: false, message: "This 'title' name already existes!" })
 
-            if (!validator.isValidName(title)) return res.status(400).send({ status: false, message: "Please Enter a valid title should contain at least 2 characters for word formation" })
-            newData['title'] = title
-        }
+                if (!validator.isValidName(title)) return res.status(400).send({ status: false, message: "Please Enter a valid title should contain at least 2 characters for word formation" })
+                newData['title'] = title
+            }
 
-        if (validator.isValidBody(description)) {
-            if (!validator.isValidName(description)) return res.status(400).send({ status: false, message: "Please Enter a valid description, should contain at least 2 characters for word formation" })
-            newData['description'] = description
-        }
+            //------------------Description-------------------
+            if (validator.isValidBody(description)) {
+                if (!validator.isValidName(description)) return res.status(400).send({ status: false, message: "Please Enter a valid description, should contain at least 2 characters for word formation" })
+                newData['description'] = description
+            }
+            //------------------Price-------------------
+            if (validator.isValidBody(price)) {
+                if (!validator.isValidDeciNum(price)) return res.status(400).send({ status: false, message: "Please Enter a valid price." })
+                newData['price'] = price
+            }
+            //-------response for no need to update things-------
+            if (currencyId) return res.status(400).send({ status: false, message: "Currency Id doesn't need to update, because it has only 'INR'(indian rupee) Option, fill other fields besides" })
 
-        if (validator.isValidBody(price)) {
-            if (!validator.isValidDeciNum(price)) return res.status(400).send({ status: false, message: "Please Enter a valid price." })
-            newData['price'] = price
-        }
-        //-------response for no need to update things-------
-        if (currencyId) return res.status(400).send({ status: false, message: "Currency Id doesn't need to update, because it has only 'INR'(indian rupee) Option, fill other fields besides" })
+            if (currencyFormat) return res.status(400).send({ status: false, message: "Currency Format doesn't need to update, because it has only One symbol, fill other fields besides" })
+            //---------------isFreeShopping-----------------
+            if (validator.isValidBody(isFreeShipping)) {
+                if (!validator.isValidBoolean(isFreeShipping)) return res.status(400).send({ status: false, message: "isFreeShipping needs to be a Boolean" })
+                newData['isFreeShipping'] = isFreeShipping
+            }
 
-        if (currencyFormat) return res.status(400).send({ status: false, message: "Currency Format doesn't need to update, because it has only One symbol, fill other fields besides" })
-        //---------------isFreeShopping-----------------
-        if (validator.isValidBody(isFreeShipping)) {
-            if (!validator.isValidBoolean(isFreeShipping)) return res.status(400).send({ status: false, message: "isFreeShipping needs to be a Boolean" })
-            newData['isFreeShipping'] = isFreeShipping
-        }
-        //------------------file URL----------------------
-        if (file.length > 0) {
-            const uploadedURL = await saveFile.uploadFiles(file[0])
-            newData['productImage'] = uploadedURL
-        }
-        //-----------------Style-----------------------
-        if (validator.isValidBody(style)) {
-            if (!validator.isValidName(style)) return res.status(400).send({ status: false, message: "Please Enter a valid style, should contain at least 2 characters for word formation" })
-            newData['style'] = style
-        }
-        //--------------Available Sizes------------------
-        if(requestBody.availableSizes){
-        if (validator.isValidBody(requestBody.availableSizes)) {
-            let availableSizes = JSON.parse(requestBody.availableSizes)
-            for (let i = 0; i < availableSizes.length; i++) {
-                if (!validator.isValidEnum(availableSizes[i])) {
-                    return res.status(400).send({ status: false, message: `${availableSizes[i]} not allowed!, Please enter Any of ["S", "XS", "M", "X", "L", "XXL", "XL"]` })
+            //-----------------Style-----------------------
+            if (validator.isValidBody(style)) {
+                if (!validator.isValidName(style)) return res.status(400).send({ status: false, message: "Please Enter a valid style, should contain at least 2 characters for word formation" })
+                newData['style'] = style
+            }
+            //--------------Available Sizes------------------
+            if (requestBody.availableSizes) {
+                if (validator.isValidBody(requestBody.availableSizes)) {
+                    let availableSizes = JSON.parse(requestBody.availableSizes)
+                    for (let i = 0; i < availableSizes.length; i++) {
+                        if (!validator.isValidEnum(availableSizes[i])) {
+                            return res.status(400).send({ status: false, message: `${availableSizes[i]} not allowed!, Please enter Any of ["S", "XS", "M", "X", "L", "XXL", "XL"]` })
+                        }
+                    }console.log(availableSizes)
+                    newData["availableSizes"]= availableSizes
                 }
             }
-        }}
-        //-----------------Installments-----------------
-        if (validator.isValidBody(installments)) {
-            if (!validator.isValidInstallment(installments)) return res.status(400).send({ status: false, message: "Please Enter a valid installments, upto 99 months and in 2 digits support only" })
-            newData['installments'] = installments
+            //-----------------Installments-----------------
+            if (validator.isValidBody(installments)) {
+                if (!validator.isValidInstallment(installments)) return res.status(400).send({ status: false, message: "Please Enter a valid installments, upto 99 months and in 2 digits support only" })
+                newData['installments'] = installments
+            }
+        }
+        //------------------file URL----------------------
+        if (!validator.isValidBody(file) && file===[]) {
+            if(Object.keys(file).length==0){
+                return res.status(400).send({status: false, message:"Please select a pic to upload as profile Picture"})
+            }
+            else{
+            const uploadedURL = await saveFile.uploadFiles(file[0])
+            newData['productImage'] = uploadedURL
+            }
         }
 
-        //--------------Check for existed name------------
-        const exixtCheck = await productModel.findOne({ title: title })
-        if (exixtCheck) return res.status(400).send({ status: true, message: "Entered 'title' already exists, Please select another title name" })
+
+        // //--------------Check for existed name------------
+        // const exixtCheck = await productModel.find({ title: title })
+        // if (exixtCheck) return res.status(400).send({ status: true, message: "Entered 'title' already exists, Please select another title name" })
 
 
         //---------------Updating things---------------
         const updatething = await productModel.findOneAndUpdate(
             { _id: productId, isDeleted: false },
-            { newData, $set: { availableSizes } },
+            {$set: newData },
             { new: true })
         // const updatething = await productModel.findOneAndUpdate(
         //     {_id:productId, isDeleted: false},
@@ -299,6 +331,6 @@ const deleteProduct = async function (req, res) {
     }
 }
 
-module.exports = { createProduct,getProductById, getByQueryFilter, updateProduct, deleteProduct }
+module.exports = { createProduct, getProductById, getByQueryFilter, updateProduct, deleteProduct }
 // module.exports = {createProduct, getSpecificProduct, getProductById, updateProduct, deleteProduct}
 
