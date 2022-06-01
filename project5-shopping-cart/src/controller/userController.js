@@ -240,7 +240,8 @@ const updateUser = async function (req, res) {
                     newData['address.billing.city'] = parsedAddress.billing.city
                 }
                 if ("pincode" in parsedAddress.billing) {
-                    if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode ))
+                    if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode
+                         ))
                         return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
                     newData['address.billing.pincode'] = parsedAddress.billing.pincode
                 }

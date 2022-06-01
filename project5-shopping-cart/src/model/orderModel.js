@@ -2,21 +2,24 @@ const mongoose = require("mongoose")
 const ObjectId = mongoose.Schema.Types.ObjectId
 
 const orderSchema = new mongoose.Schema({
-    userId:{
-        type:ObjectId,
-        ref:"product",
-        required:true
+    userId: {
+        type: ObjectId,
+        required: true,
+        ref: "user",
+        unique: true
     },
     items:[{
-        productId:{
-            type:ObjectId,
-            ref:"product",
-            required:true
-        },
-        quantity:{
-            type:Number,
-            min:1
-        }
+            productId: {
+                type: ObjectId,
+                required: true,
+                ref: "product",
+            },
+            quantity: {
+                type: Number,
+                required: true,
+                min: 1
+            },
+            _id:false
     }],
     totalPrice: {
         type: Number,
@@ -31,7 +34,7 @@ const orderSchema = new mongoose.Schema({
         required:true
     },
     cancellable:{
-        type:Boolean, 
+        type:Boolean,
         default:true
     },
     status:{
@@ -41,16 +44,14 @@ const orderSchema = new mongoose.Schema({
     },
     deletedAt:{
         type:Date,
-        // default:null
     },
     isDeleted:{
         type:Boolean,
-        defaultL:false
+        default:false
     }
 
 },
-{
-    timestamps:true
-})
+    { timestamps: true }
+)
 
 module.exports = mongoose.model("order", orderSchema)
