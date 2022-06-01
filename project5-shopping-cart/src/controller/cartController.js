@@ -131,6 +131,7 @@ const updateCart = async function(req, res){
     try{
         let userId= req.params.userId
         let requestBody= req.body;
+        let cartExist = {}
 
         const {productId, cartId, removeProduct} = requestBody // Destructuring
 
@@ -150,45 +151,61 @@ const updateCart = async function(req, res){
         if(!validator.isValidBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Please provide mandatory field in request body to Remove products from cart" });
         }
-        // if(!Object.keys(items).length ==0){
-        //     return res.status(400).send({ status: false, message: "Please provide items in request body to Remove product" });
-        // }
         //------------------Cart Exist check and validation-----------------------
         if(!validator.isValidBody(cartId) || !validator.isValidObjectId(cartId)){
             return res.status(400).send({status: false, message: "Please provide a valid cartId"})
         }
-        const cartExist = await cartModel.findOne({_id: cartId})
+        cartExist = await cartModel.findOne({_id: cartId}) // DB call------------
         if(!cartExist){
             return res.status(404).send({status:false, message:"cart does not exist with given cartId"})
-        }
-        console.log(cartExist)
-        //------------------Product Existance check and validation-------------
-        if(!validator.isValidBody(productId)|| !validator.isValidObjectId(productId)){
-            return res.status(400).send({status: false, message: "Please provide a valid productId"})
-        }
-        const productCheck = await productModel.findOne({_id:productId, isDeleted:false})
-        if(productCheck.isDeleted==true){
-            return res.status(404).send({status: false, message:"product Does not exists in DataBase with given productId in request body"})
         }
         //-----------------Remove Products-------------------------
         if(!validator.isValidBody(removeProduct) || !validator.isValidBinary(removeProduct)){
             return res.status(400).send({status:false, message:"Please enter a valid removeProduct key with value either '0' or '1' . "})
         }
-        //---------------Check Product in Cart------------------
-        // for(let i=0; i<cart.items)
-        if(cartExist.item.productId===productId){
-            return res.status(404).send({status: false, message: "product ID doesnot exists in given Cart, so can't perform remove product operation."})
+        //------------------Product Existance check and validation-------------
+        if(!validator.isValidBody(productId)|| !validator.isValidObjectId(productId)){
+            return res.status(400).send({status: false, message: "Please provide a valid productId"})
         }
-        
-        //---------------removeProduct is '1' -----------------
-        if(removeProduct===1){
-            cartUpdate = await cartModel.findOneAndUpdate({})
+        const productCheck = await productModel.findOne({_id:productId, isDeleted:false})
+        if(!productCheck){
+            return res.status(404).send({status: false, message:"product Does not exists in DataBase with given productId in request body"})
         }
-
-        //--------------- Push Updated things to DB ---------------
+        //---------------Updating cart with checking product------------------
+    if(productId){
+        for(let i=0; i<cartExist.items.length; i++){
+            if(cartExist.items[i].productId == productId && cartExist.items[i].quantity>0){
+                if(removeProduct===1){
+                    cartExist.items[i].quantity -=1
+                    cartExist.totalPrice -= productCheck.price
+                    console.log(cartExist.items[i].quantity)
+                    console.log(cartExist)
+                    // newCart === cartExist
+                }
+                if(removeProduct===0){
+                    cartExist.totalItems -=1
+                    cartExist.totalPrice -= (cartExist.items[i].quantity*productCheck.price)
+                    cartExist.items.remove(cartExist.items[i])
+                    console.log(cartExist)
+                    // newCart === cartExist
+                }  
+            }       
+            if(cartExist.items[i].productId == productId && cartExist.items[i].quantity===0){
+                cartExist.items.remove(cartExist.items[i])
+                return res.status(404).send({status:false, message:"The Product has 0 quantity, and Consider as a deleted Product in cart."})
+            }
+        }
+    }
     
-        console.log("done")
+    else{
+            return res.status(404).send({status:false, message:"Product does not exist in the cart"})
+    } 
+        
+        //--------------- Push Updated things to DB ---------------
 
+        const updatingCart = await cartModel.findOneAndUpdate({_id:cartId},
+            {$set:{totalPrice:cartExist.totalPrice, totalItems:cartExist.totalItems, items: cartExist.items}}, {new: true})
+        return res.status(200).send({status:true,message:"Success",data:updatingCart})
     }
     catch (err) {
         res.status(500).send({ status: false, message: err.message })
