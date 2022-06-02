@@ -110,6 +110,7 @@ const loginUser = async function (req, res) {
         if (!existUser) {
             return res.status(401).send({ status: false, message: "Unautherize to Login Register First" })  // status code doubt
         }
+        //  decoding for hashing password
         const matchPass = await bcrypt.compare(password, existUser.password);
         if (!matchPass) {
             return res.status(400).send({ status: false, message: "You Entered Wrong password" })
@@ -131,22 +132,14 @@ const loginUser = async function (req, res) {
 const getUser = async function (req, res) {
     try {
         const userId = req.params.userId
-
         if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Invalid UserId" })
         }
-
-        if (userId != req.loggedInUser) {
-            return res.status(401).send({ status: false, message: "You are Unauthorized to get list" })
-        }
         const isUserExist = await userModel.findById(userId)
-
         if (!isUserExist) {
             return res.status(404).send({ status: false, message: "User Not Found!" })
         }
-
         return res.status(200).send({ status: true, message: "User profile details", data: isUserExist })
-
     } catch (error) {
         res.status(500).send({ error: error.message })
     }
@@ -193,12 +186,10 @@ const updateUser = async function (req, res) {
             const hashedPassword = await bcrypt.hash(password, 10)
             newData['password'] = hashedPassword
         }
-
         if (file.length > 0) {
             const uploadedURL = await saveFile.uploadFiles(file[0])
             newData['profileImage'] = uploadedURL
         }
-
         //-----------------address's Input and validation check-------------------
         if (validator.isValidBody(address)) {
             const parsedAddress = JSON.parse(address) // Parsing to object form
@@ -241,14 +232,13 @@ const updateUser = async function (req, res) {
                 }
                 if ("pincode" in parsedAddress.billing) {
                     if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode
-                         ))
+                    ))
                         return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
                     newData['address.billing.pincode'] = parsedAddress.billing.pincode
                 }
             }
         }
         //--------Authentication here-----------
-
         if (req.loggedInUser != userId) {
             return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
         }
@@ -260,7 +250,6 @@ const updateUser = async function (req, res) {
         return res.status(200).send({ status: true, message: "user profile updated", data: updatething })
     }
     catch (err) {
-        console.log(err.message);
         res.status(500).send({ status: false, Error: err.message })
     }
 }
