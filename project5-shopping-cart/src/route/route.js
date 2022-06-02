@@ -30,18 +30,18 @@ router.delete("/products/:productId", productController.deleteProduct)
 
 //Feature III - Cart's Api
 
-router.post("/users/:userId/cart", cartController.createCart)
+router.post("/users/:userId/cart", MW.authentication, cartController.createCart)
 
-router.get("/users/:userId/cart", cartController.getCart)
+router.get("/users/:userId/cart", MW.authentication, cartController.getCart)
 
-router.put('/users/:userId/cart', cartController.updateCart)
+router.put('/users/:userId/cart', MW.authentication, cartController.updateCart)
 
-router.delete("/users/:userId/cart", cartController.deleteCart)
+router.delete("/users/:userId/cart", MW.authentication, cartController.deleteCart)
 
 //Feature IV - Order's Api
 
-router.post("/users/:userId/orders",orderController.createOrder )
+router.post("/users/:userId/orders", MW.authentication, orderController.createOrder)
 
-router.put("/users/:userId/orders", orderController.updateOrder)
+router.put("/users/:userId/orders", MW.authentication, orderController.updateOrder)
 
 module.exports = router

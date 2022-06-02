@@ -55,10 +55,10 @@ const isValidBoolean = function (value) {
 }
 
 const isValidBinary = function (value) {
-    return [1,0].indexOf(value) !== -1
+    return [1, 0].indexOf(value) !== -1
 }
 
-const isValidFile = function(value){
+const isValidFile = function (value) {
     return [1].indexOf(value) !== -1
 }
 
@@ -73,5 +73,9 @@ const isValidOrderEnum = function (value) {
 }
 
 
-module.exports = { isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone, isValidPin, isValidName, isValidDeciNum, isValidEnum , isValidBoolean, isValidInstallment, isValidBinary, validQuantity, isValidFile, isValidOrderEnum}
+module.exports = {
+    isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone,
+    isValidPin, isValidName, isValidDeciNum, isValidEnum, isValidBoolean,
+    isValidInstallment, isValidBinary, validQuantity, isValidFile, isValidOrderEnum
+}
 
