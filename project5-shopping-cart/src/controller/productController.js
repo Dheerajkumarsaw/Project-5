@@ -82,53 +82,27 @@ const createProduct = async function (req, res) {
     }
 };
 
+//-----------------------------     GET  API  BY PRODUCTID      ---------------------------------------
 
-
-
-// GET  PRODUCT BY  ID 
-
-const getProductById = async (req, res) => {
+const getProductById = async function (req, res) {
     try {
-        const productId = req.params.productId
-
-        //-------------dB call for product existance--------------------
-        const productCheck = await productModel.findOne({ _id: productId, isDeleted: false })
-        if (!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
-
-        //-----------------Empty Body check------------------
-        if (Object.keys(requestBody).length !=0 && !file) {
-            return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
+        const productId = req.params.productId;
+        if (!validator.isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "Enter valid Product id" })
         }
-        //-----------------------Destructuring------------------------
-        const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, installments, isDeleted } = requestBody
-
-        //-------------------Deleted Denied---------------------
-        if (validator.isValidBody(isDeleted)) return res.status(400).send({ status: false, message: "You are not allowed to perform delete Operation in update API, you need to hit Delete API" })
-
-        // ------------------validation-------------------------
-        if (validator.isValidBody(title)) {
-
-            const titleExist = await productModel.findOne({ title: title }) // DB call for title existance
-            if (titleExist) return res.status(400).send({ status: false, message: "This 'title' name already existes!" })
-
-            if (!validator.isValidName(title)) return res.status(400).send({ status: false, message: "Please Enter a valid title should contain at least 2 characters for word formation" })
-            newData['title'] = title
+        const productList = await productModel.findOne({ _id: productId, isDeleted: false });
+        if (!productList) {
+            return res.status(404).send({ status: false, message: `Product Not found With ${productId} or Product is Deleted` })
         }
-
-        const isProductExist = await productModel.findOne({ _id: productId, isDeleted: false })
-
-        if (!isProductExist) {
-            return res.status(404).send({ status: false, message: "Product Not found! or Already Deleted" })
-        }
-
-        return res.status(200).send({ status: true, message: "Product", data: isProductExist })
-
-    } catch (error) {
+        res.status(200).send({ status: false, message: "Product List", data: productList })
+    }
+    catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
-}
+};
 
-//Update Product by filter
+//  ========================   GET  PRODUCT   BY  QUERY  FILTER   =========================================
+
 const getByQueryFilter = async function (req, res) {
     try {
         const filter = { isDeleted: false };
@@ -332,5 +306,4 @@ const deleteProduct = async function (req, res) {
 }
 
 module.exports = { createProduct, getProductById, getByQueryFilter, updateProduct, deleteProduct }
-// module.exports = {createProduct, getSpecificProduct, getProductById, updateProduct, deleteProduct}
 
