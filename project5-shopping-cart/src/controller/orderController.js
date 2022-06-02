@@ -7,16 +7,16 @@ const validator = require("../validator/validator")
 const createOrder = async (req, res) => {
     try {
         const userId = req.params.userId
-        const cart = req.body
+        const cartId = req.body.cartId
 
-        if(!validator.isValidBody(cart)){
+        if(!validator.isValidBody(cartId)){
             return res.status(400).send({ status: false, message: "request body is empty!" })
         }
         if(!validator.isValidObjectId(userId)){
             return res.status(400).send({ status: false, message: "Invalid userId" })
         }
 
-        if(!validator.isValidObjectId(cart.id)){
+        if(!validator.isValidObjectId(cartId)){
             return res.status(400).send({ status: false, message: "Invalid card Id" })
         }
 
@@ -25,12 +25,13 @@ const createOrder = async (req, res) => {
             return res.status(404).send({ status: false, message: "User not found With given Id" })
         }
 
-        let isCart = await cartModel.findOneAndUpdate({_id:cart.id}, {items:[], totalPrice:0, totalItems:0})
-            console.log(isCart)
+        let isCart = await cartModel.findOneAndUpdate({_id:cartId}, {items:[], totalPrice:0, totalItems:0})
         if (!isCart) {
             return res.status(404).send({ status: false, message: "Cart not found With given Id" })
         }
-
+        if(isCart.totalItems==0){
+            return res.status(400).send({status:false, message:"Card does not have any Items, Can't create orders ! "})
+        }
         if (userId != isCart.userId) {
             return res.status(401).send({ status: false, message: "Given cart is not belong's to given user" })
         }
