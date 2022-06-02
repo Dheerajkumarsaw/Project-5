@@ -16,7 +16,7 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: false, message: `You can't create Deleted Product Please Mark IsDleted false` })
         }
         if (requestFiles.length == 0) {
-            return res.status(400).send({ status: false, message: "Enter Files to be uploadp" })
+            return res.status(400).send({ status: false, message: "Enter Files to be upload" })
         }
         const { title, description, price, currencyId, currencyFormat, availableSizes, installments, style } = requestBody //destructuring
         // validations

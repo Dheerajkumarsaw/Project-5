@@ -158,10 +158,6 @@ const updateUser = async function (req, res) {
         if (Object.keys(requestBody).length == 0 && !validator.isValidBody(file)) {
             return res.status(400).send({ status: false, message: "Enter Atleast One Field to update" })
         }
-        //-------------Empty Validation------------
-        if (Object.keys(requestBody).length == 0) {
-            return res.status(400).send({ status: false, message: "Please fill Atleast to update" })
-        }
         //-------------Destructuring--------------
         const { fname, lname, email, phone, address, password } = requestBody
         //-----------validation-------------
@@ -191,53 +187,59 @@ const updateUser = async function (req, res) {
             newData['profileImage'] = uploadedURL
         }
         //-----------------address's Input and validation check-------------------
-        if (validator.isValidBody(address)) {
-            const parsedAddress = JSON.parse(address) // Parsing to object form
-            // console.log(parsedAddress)
-            if ("shipping" in parsedAddress) {
-                if (!validator.isValidBody(parsedAddress.shipping)) {
-                    return res.status(400).send({ status: false, message: "Enter shiping Details To Update" })
-                }
-                if ("street" in parsedAddress.shipping) {
-                    if (!validator.isValidBody(parsedAddress.shipping.street)) {
-                        return res.status(400).send({ status: false, message: "Enter shiping street Details To Update" })
-                    }
-                    newData['address.shipping.street'] = parsedAddress.shipping.street
-                }
-                if ("city" in parsedAddress.shipping) {
-                    if (!validator.isValidName(parsedAddress.shipping.city) || !validator.isValidBody(parsedAddress.shipping.city))
-                        return res.status(400).send({ status: false, message: "Please Enter a valid City" })
-                    newData["address.shipping.city"] = parsedAddress.shipping.city
-                }
-                if ("pincode" in parsedAddress.shipping) {
-                    if (!validator.isValidPin(parsedAddress.shipping.pincode) || !validator.isValidBody(parsedAddress.shipping.pincode))
-                        return res.status(400).send({ status: false, message: "Please Enter a valid  shipping PinCode" })
-                    newData['address.shipping.pincode'] = parsedAddress.shipping.pincode
-                }
+        if ("address" in requestBody) {
+            if (!validator.isValidBody(address)) {
+                return res.status(400).send({ status: false, message: "Enter address To Update" })
             }
-            if ("billing" in parsedAddress) {
-                if (!validator.isValidBody(parsedAddress.billing)) {
-                    return res.status(400).send({ status: false, message: "Enter billing Details To Update" })
-                }
-                if ("street" in parsedAddress.billing) {
-                    if (!validator.isValidBody(parsedAddress.billing.street)) {
-                        return res.status(400).send({ status: false, message: "Enter billing street Details To Update" })
+            if (validator.isValidBody(address)) {
+                const parsedAddress = JSON.parse(address) // Parsing to object form
+                // console.log(parsedAddress)
+                if ("shipping" in parsedAddress) {
+                    if (!validator.isValidBody(parsedAddress.shipping)) {
+                        return res.status(400).send({ status: false, message: "Enter shiping Details To Update" })
                     }
-                    newData['address.billing.street'] = parsedAddress.billing.street
+                    if ("street" in parsedAddress.shipping) {
+                        if (!validator.isValidBody(parsedAddress.shipping.street)) {
+                            return res.status(400).send({ status: false, message: "Enter shiping street Details To Update" })
+                        }
+                        newData['address.shipping.street'] = parsedAddress.shipping.street
+                    }
+                    if ("city" in parsedAddress.shipping) {
+                        if (!validator.isValidName(parsedAddress.shipping.city) || !validator.isValidBody(parsedAddress.shipping.city))
+                            return res.status(400).send({ status: false, message: "Please Enter a valid City" })
+                        newData["address.shipping.city"] = parsedAddress.shipping.city
+                    }
+                    if ("pincode" in parsedAddress.shipping) {
+                        if (!validator.isValidPin(parsedAddress.shipping.pincode) || !validator.isValidBody(parsedAddress.shipping.pincode))
+                            return res.status(400).send({ status: false, message: "Please Enter a valid  shipping PinCode" })
+                        newData['address.shipping.pincode'] = parsedAddress.shipping.pincode
+                    }
                 }
-                if ("city" in parsedAddress.billing) {
-                    if (!validator.isValidName(parsedAddress.billing.city) || !validator.isValidBody(parsedAddress.billing.city))
-                        return res.status(400).send({ status: false, message: "Please Enter a valid billing City" })
-                    newData['address.billing.city'] = parsedAddress.billing.city
-                }
-                if ("pincode" in parsedAddress.billing) {
-                    if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode
-                    ))
-                        return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
-                    newData['address.billing.pincode'] = parsedAddress.billing.pincode
+                if ("billing" in parsedAddress) {
+                    if (!validator.isValidBody(parsedAddress.billing)) {
+                        return res.status(400).send({ status: false, message: "Enter billing Details To Update" })
+                    }
+                    if ("street" in parsedAddress.billing) {
+                        if (!validator.isValidBody(parsedAddress.billing.street)) {
+                            return res.status(400).send({ status: false, message: "Enter billing street Details To Update" })
+                        }
+                        newData['address.billing.street'] = parsedAddress.billing.street
+                    }
+                    if ("city" in parsedAddress.billing) {
+                        if (!validator.isValidName(parsedAddress.billing.city) || !validator.isValidBody(parsedAddress.billing.city))
+                            return res.status(400).send({ status: false, message: "Please Enter a valid billing City" })
+                        newData['address.billing.city'] = parsedAddress.billing.city
+                    }
+                    if ("pincode" in parsedAddress.billing) {
+                        if (!validator.isValidPin(parsedAddress.billing.pincode) || !validator.isValidBody(parsedAddress.billing.pincode
+                        ))
+                            return res.status(400).send({ status: false, message: "Please Enter a valid Pin Code" })
+                        newData['address.billing.pincode'] = parsedAddress.billing.pincode
+                    }
                 }
             }
         }
+
         //--------Authentication here-----------
         if (req.loggedInUser != userId) {
             return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
