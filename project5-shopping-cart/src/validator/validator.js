@@ -13,7 +13,7 @@ const isValidPhone = function (value) {
 };
 
 const isValidEmail = function (value) {
-    const regx = /^([a-z0-9]+@[a-z]+\.[a-z]{2,3})?$/
+    const regx = /^([a-zA-Z0-9_.]+@[a-z]+\.[a-z]{2,3})?$/
     return regx.test(value)
 };
 
