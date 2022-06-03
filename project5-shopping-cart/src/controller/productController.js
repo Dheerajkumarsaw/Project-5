@@ -26,7 +26,7 @@ const createProduct = async function (req, res) {
         if (!validator.isValidBody(description)) {
             return res.status(400).send({ status: false, message: "Enter Description" })
         }
-        if (!validator.isValidBody(price) || !validator.isValidDeciNum(price)) {
+        if (!validator.isValidBody(price) || !validator.isValidDeciNum(price) || price == 0) {
             return res.status(400).send({ status: false, message: "Enter Price Any Combination of Number or Decimal" })
         }
         if (currencyId) {
@@ -66,6 +66,12 @@ const createProduct = async function (req, res) {
         if (requestBody.isDeleted) {
             requestBody.deletedAt = Date.now()
         }
+        if (!validator.checkImage(requestFiles[0].originalname)) {
+            return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
+        }
+        if (requestFiles.length > 1) {
+            return res.status(400).send({ status: false, message: "Only one File Allowed" })
+        }
         const uploadedURL = await saveFile.uploadFiles(requestFiles[0]);
         requestBody.productImage = uploadedURL;
 
@@ -94,7 +100,7 @@ const getProductById = async function (req, res) {
         if (!productList) {
             return res.status(404).send({ status: false, message: `Product Not found With ${productId} or Product is Deleted` })
         }
-        res.status(200).send({ status: false, message: "Product List", data: productList })
+        res.status(200).send({ status: true, message: "Product List", data: productList })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -117,7 +123,8 @@ const getByQueryFilter = async function (req, res) {
                         return res.status(400).send({ status: false, message: `${sizeParse[i]} not Allowed Only These S,XS,M,X,L,XXL,XL are allowed` })
                     }
                 }
-                filter["availableSizes"] = sizeParse
+                filter["availableSizes"] = {}
+                filter["availableSizes"]["$in"] = sizeParse
             }
             if ("name" in queryFilter) {
                 if (!validator.isValidBody(name)) {
@@ -187,6 +194,9 @@ const updateProduct = async function (req, res) {
         const productCheck = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!productCheck) return res.status(404).send({ status: true, message: "No product found by Product Id given in path params" })
 
+        if (!validator.isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "Enter valid ProductId" })
+        }
         //-----------------Empty Body check------------------
         if (!validator.isValidBody(file) && Object.keys(requestBody).length == 0) {
             return res.status(400).send({ status: false, message: "Please fill at least one area to update" })
@@ -217,7 +227,7 @@ const updateProduct = async function (req, res) {
             }
             //------------------Price-------------------
             if (validator.isValidBody(price)) {
-                if (!validator.isValidDeciNum(price)) return res.status(400).send({ status: false, message: "Please Enter a valid price." })
+                if (!validator.isValidDeciNum(price) || price == 0) return res.status(400).send({ status: false, message: "Please Enter a valid price." })
                 newData['price'] = price
             }
             //-------response for no need to update things-------
@@ -255,13 +265,18 @@ const updateProduct = async function (req, res) {
             }
         }
         //------------------file URL----------------------
-
+        if (!validator.checkImage(requestFiles[0].originalname)) {
+            return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
+        }
+        if (requestFiles.length > 1) {
+            return res.status(400).send({ status: false, message: "Only one File Allowed" })
+        }
         if (validator.isValidFile(file.length)) {
             const uploadedURL = await saveFile.uploadFiles(file[0])
             newData['productImage'] = uploadedURL
         }
-        if(Object.keys(requestBody).length == 0 && !validator.isValidFile(file.length)){
-            return res.status(400).send({status: true, message:"The 'key' should have any file as 'value' Please, Provide it"})
+        if (Object.keys(requestBody).length == 0 && !validator.isValidFile(file.length)) {
+            return res.status(400).send({ status: false, message: "The 'key' should have any file as 'value' Please, Provide it" })
         }
 
         // //--------------Check for existed name------------
@@ -298,7 +313,7 @@ const deleteProduct = async function (req, res) {
         if (!existProduct) {
             return res.status(404).send({ status: false, message: "Product not found or Allready Deleted" })
         }
-        res.status(200).send({ status: false, message: "Product Deleted SuccessFully", data: existProduct })
+        res.status(200).send({ status: true, message: "Product Deleted SuccessFully", data: existProduct })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })

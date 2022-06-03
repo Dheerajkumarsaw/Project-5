@@ -216,10 +216,8 @@ const deleteCart = async function (req, res) {
         if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Enter Valid Userid" })
         }
-        if(!validator.isValidObjectId(req.body.cartId)){
-            return res.status(400).send({ status: false, message: "Enter cartId also Valid cartId" })
-        }
-        const existCart = await cartModel.findById(req.body.cartId);
+        
+        const existCart = await cartModel.findOne({userId:userId});
         if (!existCart || existCart.totalItems == 0) {
             return res.status(404).send({ status: false, message: "Cart Does Not Exist Or Allready Deleted" })
         }

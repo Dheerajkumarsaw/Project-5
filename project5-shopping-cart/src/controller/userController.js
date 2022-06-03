@@ -79,6 +79,12 @@ const createUser = async function (req, res) {
         const hashPassword = await bcrypt.hash(password, 10);
         requestBody.password = hashPassword  //SAVING FOR  CREATE DOCS
         //   =================   AWS  S3  URL  CREATION  ADN  SAVING FILE  IN AWS  ===========================
+        if (!validator.checkImage(requestFiles[0].originalname)) {
+            return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
+        }
+        if (requestFiles.length > 1) {
+            return res.status(400).send({ status: false, message: "Only one File Allowed" })
+        }
         const uploadedURL = await saveFile.uploadFiles(requestFiles[0])
         // console.log(uploadedURL)
         requestBody.profileImage = uploadedURL //SAVING FOR  CREATE DOCS
@@ -159,6 +165,9 @@ const updateUser = async function (req, res) {
         //---------------dB call for UserID check-----------------
         const userCheck = await userModel.findOne({ _id: userId })
         if (!userCheck) return res.status(404).send({ status: true, message: "No user found by User Id given in path params" })
+        if (!validator.isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "Enter valid UserId" })
+        }
         if (Object.keys(requestBody).length == 0 && !validator.isValidBody(file)) {
             return res.status(400).send({ status: false, message: "Enter Atleast One Field to update" })
         }
@@ -185,6 +194,12 @@ const updateUser = async function (req, res) {
             if (!validator.isValidPass(password)) return res.status(400).send({ status: false, message: "Please Enter a valid Password, would have min 8 and max 15 characters" })
             const hashedPassword = await bcrypt.hash(password, 10)
             newData['password'] = hashedPassword
+        }
+        if (!validator.checkImage(requestFiles[0].originalname)) {
+            return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
+        }
+        if (requestFiles.length > 1) {
+            return res.status(400).send({ status: false, message: "Only one File Allowed" })
         }
         if (file.length > 0) {
             const uploadedURL = await saveFile.uploadFiles(file[0])

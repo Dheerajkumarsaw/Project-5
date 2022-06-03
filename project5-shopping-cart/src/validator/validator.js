@@ -72,10 +72,15 @@ const isValidOrderEnum = function (value) {
     return ["pending", "completed", "cancled"].indexOf(value) !== -1
 }
 
+let checkImage = (img) => {
+    let imageRegex = /(jpeg|png|jpg)$/
+    return imageRegex.test(img)
+}
+
 
 module.exports = {
     isValidBody, isValidEmail, isValidObjectId, isValidPass, isValidPhone,
     isValidPin, isValidName, isValidDeciNum, isValidEnum, isValidBoolean,
-    isValidInstallment, isValidBinary, validQuantity, isValidFile, isValidOrderEnum
+    isValidInstallment, isValidBinary, validQuantity, isValidFile, isValidOrderEnum,checkImage
 }
 
