@@ -9,14 +9,14 @@ const createOrder = async (req, res) => {
         const userId = req.params.userId
         const cartId = req.body.cartId
 
-        if(!validator.isValidBody(cartId)){
+        if (!validator.isValidBody(cartId)) {
             return res.status(400).send({ status: false, message: "request body is empty!" })
         }
-        if(!validator.isValidObjectId(userId)){
+        if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Invalid userId" })
         }
 
-        if(!validator.isValidObjectId(cartId)){
+        if (!validator.isValidObjectId(cartId)) {
             return res.status(400).send({ status: false, message: "Invalid card Id" })
         }
 
@@ -25,12 +25,12 @@ const createOrder = async (req, res) => {
             return res.status(404).send({ status: false, message: "User not found With given Id" })
         }
 
-        let isCart = await cartModel.findOneAndUpdate({_id:cartId}, {items:[], totalPrice:0, totalItems:0})
+        let isCart = await cartModel.findOneAndUpdate({ _id: cartId }, { items: [], totalPrice: 0, totalItems: 0 })
         if (!isCart) {
             return res.status(404).send({ status: false, message: "Cart not found With given Id" })
         }
-        if(isCart.totalItems==0){
-            return res.status(400).send({status:false, message:"Card does not have any Items, Can't create orders ! "})
+        if (isCart.totalItems == 0) {
+            return res.status(400).send({ status: false, message: "Card does not have any Items, Can't create orders ! " })
         }
         if (userId != isCart.userId) {
             return res.status(401).send({ status: false, message: "Given cart is not belong's to given user" })
@@ -38,10 +38,10 @@ const createOrder = async (req, res) => {
         //------------ Authorization Here -------------
         if (req.loggedInUser != userId) {
             return res.status(401).send({ status: false, message: " You are Unautherize" })
-        } 
-        let isOrderExist = await orderModel.findOne({userId:userId})
-        if(isOrderExist){
-            return res.status(400).send({status:false, message:"Order is Already Placed!"})
+        }
+        let isOrderExist = await orderModel.findOne({ userId: userId })
+        if (isOrderExist) {
+            return res.status(400).send({ status: false, message: "Order is Already Placed!" })
         }
         let totalsum = 0
         let allItems = isCart.items
@@ -102,19 +102,32 @@ const updateOrder = async function (req, res) {
             }
             if (existOrder.cancellable) {
                 if (existOrder.status == status) {
-                    return res.status(400).send({ status: false, message: "You can not cancle order again" })
+                    return res.status(400).send({ status: false, message: "You can not complete it is cancled ,order again" })
                 }
                 const updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: status }, { new: true })
                 return res.status(200).send({ status: true, message: "Updated status", data: updateOrder })
             }
         }
-        if (existOrder.status == "completed") {
-            return res.status(400).send({ status: false, message: "This order is not updatable " })
+        if (status == "completed") {
+            if (existOrder.status == "completed") {
+                return res.status(400).send({ status: false, message: "This order is not updatable Already completed" })
+            }
+            if (existOrder.status == "cancled") {
+                return res.status(400).send({ status: false, message: "This order is not updatable Already cancled" })
+            }
         }
+        if (status == "pending") {
+            if (existOrder.status != "pending") {
+                return res.status(400).send({ status: false, message: "This order is not updatable Already canceled or completed" })
+            } else {
+                return res.status(400).send({ status: false, message: "This order is Already in pending" })
+            }
+        }
+
         //================ Autherization  ===============
         if (req.loggedInUser != userId) {
             return res.status(401).send({ status: false, message: " You are Unautherize" })
-        } 
+        }
         const updatedOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: status }, { new: true })
         res.status(200).send({ status: true, message: "Updated", data: updatedOrder })
     }

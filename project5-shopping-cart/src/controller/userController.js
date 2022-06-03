@@ -170,8 +170,8 @@ const updateUser = async function (req, res) {
             newData['lname'] = lname
         }
         if (validator.isValidBody(email)) {
-            if (!validator.isValidEmail(email)) return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
-            newData['email'] = email
+            if (!validator.isValidEmail(email.toLowerCase())) return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
+            newData['email'] = email//few change
         }
         if (validator.isValidBody(phone)) {
             if (!validator.isValidPhone(phone)) return res.status(400).send({ status: false, message: "Please Enter a valid phone number" })
