@@ -9,13 +9,9 @@ const createOrder = async (req, res) => {
         const userId = req.params.userId
         const cartId = req.body.cartId
 
-        if (!validator.isValidBody(cartId)) {
-            return res.status(400).send({ status: false, message: "request body is empty!" })
-        }
         if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Invalid userId" })
         }
-
         if (!validator.isValidObjectId(cartId)) {
             return res.status(400).send({ status: false, message: "Invalid card Id" })
         }
@@ -37,7 +33,7 @@ const createOrder = async (req, res) => {
         }
         //------------ Authorization Here -------------
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: " You are Unautherize" })
+            return res.status(403).send({ status: false, message: " You are Unautherize" })
         }
         let isOrderExist = await orderModel.findOne({ userId: userId })
         if (isOrderExist) {
@@ -48,7 +44,6 @@ const createOrder = async (req, res) => {
         const makeSum = allItems.forEach(element => {
             totalsum = totalsum + element.quantity
         });
-        console.log(totalsum);
 
         const newOrder = {
             userId: userId,
@@ -60,8 +55,7 @@ const createOrder = async (req, res) => {
         }
 
         const Order = await orderModel.create(newOrder)
-
-        res.status(200).send({ status: true, message: "Order created!", data: Order })
+        res.status(201).send({ status: true, message: "Success", data: Order })
 
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -94,7 +88,7 @@ const updateOrder = async function (req, res) {
             return res.status(400).send({ status: false, message: "Enter only any of these pending, completed, cancled" })
         }
         if (userId != existOrder.userId) {  // also  autherization
-            return res.status(401).send({ status: false, message: "trying to make change by defferent user" })
+            return res.status(403).send({ status: false, message: "trying to make change by defferent user" })
         }
         if (status == "cancled") {
             if (!existOrder.cancellable) {
@@ -105,7 +99,7 @@ const updateOrder = async function (req, res) {
                     return res.status(400).send({ status: false, message: "You can not complete it is cancled ,order again" })
                 }
                 const updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: status }, { new: true })
-                return res.status(200).send({ status: true, message: "Updated status", data: updateOrder })
+                return res.status(200).send({ status: true, message: "Success", data: updateOrder })
             }
         }
         if (status == "completed") {
@@ -126,10 +120,10 @@ const updateOrder = async function (req, res) {
 
         //================ Autherization  ===============
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: " You are Unautherize" })
+            return res.status(403).send({ status: false, message: " You are Unautherize" })
         }
         const updatedOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { status: status }, { new: true })
-        res.status(200).send({ status: true, message: "Updated", data: updatedOrder })
+        res.status(200).send({ status: true, message: "Success", data: updatedOrder })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })

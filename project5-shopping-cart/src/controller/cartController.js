@@ -40,9 +40,9 @@ const createCart = async (req, res) => {
         }
         //  ------------    AUTHERIZATION       ------
         if(req.loggedInUser!=userId){
-            return res.status(401).send({status:false,message:" You are Unautherize"})
+            return res.status(403).send({status:false,message:" You are Unautherize"})
         }
-        const isCartExist = await cartModel.findOne({ $or:[{userId: userId} , {_id:cartId}]})
+        const isCartExist = await cartModel.findOne({ $and:[{userId: userId} , {_id:cartId}]})
         if (isCartExist) {
             let count = isCartExist.totalItems +  1
             let total = isCartExist.totalPrice +  isProduct.price
@@ -56,7 +56,7 @@ const createCart = async (req, res) => {
             );
                 
             if (productExistInCart) {
-                 return res.status(200).send({ status: true, message: "cart Updated", data: productExistInCart })
+                 return res.status(201).send({ status: true, message: "Success", data: productExistInCart })
                 }
 
         let updatedcart = await cartModel.findOneAndUpdate({userId:userId},
@@ -65,7 +65,7 @@ const createCart = async (req, res) => {
                     "totalItems": +1,
                    }, totalPrice:total}, {new:true})
             if(updateCart){
-                return res.status(200).send({status:true, message:"cart Updated", data:updatedcart})
+                return res.status(201).send({status:true, message:"Success", data:updatedcart})
                 }
          }
          //  NEW  CART  CREATION
@@ -81,7 +81,7 @@ const createCart = async (req, res) => {
         }
 
         const cart = await cartModel.create(newCart)
-        res.status(200).send({ status: true, message: " new Cart Created", data: cart })
+        res.status(201).send({ status: true, message: "Success", data: cart })
 
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -106,14 +106,14 @@ const getCart = async function (req, res) {
         }
         //   --------------------   Autherization  Here    ---------------------------
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: " You are Unautherize" })
+            return res.status(403).send({ status: false, message: " You are Unautherize" })
         }
         const productDetails = []
         const productsIds = existCart.items
         for (let i = 0; i < productsIds.length; i++) {
             productDetails.push(await productModel.findById(productsIds[i].productId))
         }
-        res.status(200).send({ status: true, message: "Cart Summary here", data: existCart })
+        res.status(200).send({ status: true, message: "Success", data: existCart })
         // res.status(200).send({ status: true, message: "Cart Summary here", data: [existCart, productDetails] })
     }
     catch (error) {
@@ -140,7 +140,7 @@ const updateCart = async function(req, res){
         }
         //   --------------------   Autherization  Here    ---------------------------
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: " You are Unautherize" })
+            return res.status(403).send({ status: false, message: " You are Unautherize" })
         }   
          //-------------------RequestBody empty check---------------------
         if(!validator.isValidBody(requestBody)) {
@@ -202,7 +202,7 @@ const updateCart = async function(req, res){
 
         const updatingCart = await cartModel.findOneAndUpdate({_id:cartId},
             {$set:{totalPrice:cartExist.totalPrice, totalItems:cartExist.totalItems, items: cartExist.items}}, {new: true})
-        return res.status(200).send({status:true,message:"Success",data:updatingCart})
+        return res.status(200).send({ status: true, message: "Success",data: updatingCart})
     }
     catch (err) {
         res.status(500).send({ status: false, message: err.message })
@@ -216,17 +216,17 @@ const deleteCart = async function (req, res) {
         if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Enter Valid Userid" })
         }
-        
+    
         const existCart = await cartModel.findOne({userId:userId});
         if (!existCart || existCart.totalItems == 0) {
             return res.status(404).send({ status: false, message: "Cart Does Not Exist Or Allready Deleted" })
         }
         //  --------   Autherization  Here   ------------
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: "Unautrherize To Make Changes" })
+            return res.status(403).send({ status: false, message: "Unautrherize To Make Changes" })
         }
         await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalItems: 0, totalPrice: 0 } }, { new: true });
-        res.status(200).send({ status: false, message: "Cart Deleted SuccessFully" })
+        res.status(200).send({ status: false, message: "Success" })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })

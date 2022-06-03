@@ -78,6 +78,7 @@ const createUser = async function (req, res) {
         //   ================   PASSWORD  HASHING   ====================
         const hashPassword = await bcrypt.hash(password, 10);
         requestBody.password = hashPassword  //SAVING FOR  CREATE DOCS
+
         //   =================   AWS  S3  URL  CREATION  ADN  SAVING FILE  IN AWS  ===========================
         if (!validator.checkImage(requestFiles[0].originalname)) {
             return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
@@ -87,11 +88,12 @@ const createUser = async function (req, res) {
         }
         const uploadedURL = await saveFile.uploadFiles(requestFiles[0])
         // console.log(uploadedURL)
+
         requestBody.profileImage = uploadedURL //SAVING FOR  CREATE DOCS
         requestBody.address = address  //SAVING FOR  CREATE DOCS
         //   DOCS  CFREATION  IN DB
         const userCreated = await userModel.create(requestBody);
-        res.status(201).send({ status: true, message: "Successfullly created", data: userCreated })
+        res.status(201).send({ status: true, message: "Success", data: userCreated })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -128,7 +130,7 @@ const loginUser = async function (req, res) {
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + 10 * 60 * 60
         }, "weAreIndians")
-        res.status(200).send({ status: true, message: " User Login Successfull", data: { userId: existUser._id, token: token } })
+        res.status(200).send({ status: true, message: "Success", data: { userId: existUser._id, token: token } })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -147,9 +149,9 @@ const getUser = async function (req, res) {
         }
         //--------Authentication here-----------
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
+            return res.status(403).send({ status: false, message: "You are unauthorized to make changes" })
         }
-        return res.status(200).send({ status: true, message: "User profile details", data: isUserExist })
+        return res.status(200).send({ status: true, message: "Success", data: isUserExist })
     } catch (error) {
         res.status(500).send({ error: error.message })
     }
@@ -162,11 +164,14 @@ const updateUser = async function (req, res) {
         const userId = req.params.userId
         const file = req.files
         let newData = {}
+
         //---------------dB call for UserID check-----------------
-        const userCheck = await userModel.findOne({ _id: userId })
-        if (!userCheck) return res.status(404).send({ status: true, message: "No user found by User Id given in path params" })
         if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Enter valid UserId" })
+        }
+        const userCheck = await userModel.findById(userId)
+        if (!userCheck) {
+            return res.status(404).send({ status: false, message: "No user found by User Id given in path params" })
         }
         if (Object.keys(requestBody).length == 0 && !validator.isValidBody(file)) {
             return res.status(400).send({ status: false, message: "Enter Atleast One Field to update" })
@@ -175,23 +180,28 @@ const updateUser = async function (req, res) {
         const { fname, lname, email, phone, address, password } = requestBody
         //-----------validation-------------
         if (validator.isValidBody(fname)) {
-            if (!validator.isValidName(fname)) return res.status(400).send({ status: false, message: "Please Enter a valid First Name" })
+            if (!validator.isValidName(fname))
+                return res.status(400).send({ status: false, message: "Please Enter a valid First Name" })
             newData['fname'] = fname
         }
         if (validator.isValidBody(lname)) {
-            if (!validator.isValidName(lname)) return res.status(400).send({ status: false, message: "Please Enter a valid Last Name" })
+            if (!validator.isValidName(lname))
+                return res.status(400).send({ status: false, message: "Please Enter a valid Last Name" })
             newData['lname'] = lname
         }
         if (validator.isValidBody(email)) {
-            if (!validator.isValidEmail(email)) return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
+            if (!validator.isValidEmail(email)) 
+            return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
             newData['email'] = email
         }
         if (validator.isValidBody(phone)) {
-            if (!validator.isValidPhone(phone)) return res.status(400).send({ status: false, message: "Please Enter a valid phone number" })
+            if (!validator.isValidPhone(phone))
+                return res.status(400).send({ status: false, message: "Please Enter a valid phone number" })
             newData['phone'] = phone
         }
         if (validator.isValidBody(password)) {
-            if (!validator.isValidPass(password)) return res.status(400).send({ status: false, message: "Please Enter a valid Password, would have min 8 and max 15 characters" })
+            if (!validator.isValidPass(password))
+                return res.status(400).send({ status: false, message: "Please Enter a valid Password, would have min 8 and max 15 characters" })
             const hashedPassword = await bcrypt.hash(password, 10)
             newData['password'] = hashedPassword
         }
@@ -261,14 +271,16 @@ const updateUser = async function (req, res) {
 
         //--------Authentication here-----------
         if (req.loggedInUser != userId) {
-            return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
+            return res.status(403).send({ status: false, message: "You are unauthorized to make changes" })
         }
         //---------Already Exixts for phone and email data --DB Check-----
         const doublicateCheck = await userModel.find({ $or: [{ email: email, phone: phone }] })
-        if (doublicateCheck.length > 0) return res.status(400).send({ status: false, message: "Please Check wheather phone number and email Id already exists" })
+        if (doublicateCheck.length > 0)
+            return res.status(400).send({ status: false, message: "Please Check wheather phone number and email Id already exists" })
+
         //---------updation perform in DB-------------
         const updatething = await userModel.findOneAndUpdate({ _id: userId }, newData, { new: true })
-        return res.status(200).send({ status: true, message: "user profile updated", data: updatething })
+        return res.status(200).send({ status: true, message: "Success", data: updatething })
     }
     catch (err) {
         res.status(500).send({ status: false, Error: err.message })
