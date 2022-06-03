@@ -139,6 +139,10 @@ const getUser = async function (req, res) {
         if (!isUserExist) {
             return res.status(404).send({ status: false, message: "User Not Found!" })
         }
+        //--------Authentication here-----------
+        if (req.loggedInUser != userId) {
+            return res.status(401).send({ status: false, message: "You are unauthorized to make changes" })
+        }
         return res.status(200).send({ status: true, message: "User profile details", data: isUserExist })
     } catch (error) {
         res.status(500).send({ error: error.message })
@@ -170,8 +174,8 @@ const updateUser = async function (req, res) {
             newData['lname'] = lname
         }
         if (validator.isValidBody(email)) {
-            if (!validator.isValidEmail(email.toLowerCase())) return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
-            newData['email'] = email//few change
+            if (!validator.isValidEmail(email)) return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
+            newData['email'] = email
         }
         if (validator.isValidBody(phone)) {
             if (!validator.isValidPhone(phone)) return res.status(400).send({ status: false, message: "Please Enter a valid phone number" })
