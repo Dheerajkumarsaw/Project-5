@@ -205,13 +205,14 @@ const updateUser = async function (req, res) {
             const hashedPassword = await bcrypt.hash(password, 10)
             newData['password'] = hashedPassword
         }
-        if (!validator.checkImage(requestFiles[0].originalname)) {
-            return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
-        }
-        if (requestFiles.length > 1) {
-            return res.status(400).send({ status: false, message: "Only one File Allowed" })
-        }
+        
         if (file.length > 0) {
+            if (!validator.checkImage(file[0].originalname)) {
+                return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
+            }
+            if (file.length > 1) {
+                return res.status(400).send({ status: false, message: "Only one File Allowed" })
+            }
             const uploadedURL = await saveFile.uploadFiles(file[0])
             newData['profileImage'] = uploadedURL
         }
