@@ -33,11 +33,22 @@ const createCart = async function (req, res) {
         if (!existProduct) {
             return res.status(404).send({ status: false, message: "product not found" })
         }
+        let existCart
+        if("cartId" in requestBody){
+            if(!validator.isValidObjectId(cartId)){
+            return res.status(400).send({ status: false, message: "Enter valid cart id" })
+            }
+            existCart =await cartModel.findById(cartId)
+            if(!existCart){
+                return res.status(400).send({status:false,message:"Cart does not exist"})
+            }
+        }
         //  ------------    AUTHERIZATION       ------
-        // if(req.loggedInUser!=userId){
-        //     return res.status(403).send({status:false,message:" You are Unautherize"})
-        // }
-        const existCart = await cartModel.findOne({ userId: userId, cartId: cartId })
+        if(req.loggedInUser!=userId){
+            return res.status(403).send({status:false,message:" You are Unautherize"})
+        }
+         existCart = await cartModel.findOne({ userId: userId })
+        
         if (existCart) {
             const existProductInCart = await cartModel.findOne({ userId: userId, "items.productId": productId });
             if (existProductInCart) {
