@@ -169,7 +169,7 @@ const updateCart = async function(req, res){
         if(cartExist.items.length !=0){
         for(let i=0; i<cartExist.items.length; i++){
             if(cartExist.items[i].productId == productId && cartExist.items[i].quantity>0){
-                if(removeProduct===1){
+                if(removeProduct === 1){
                     cartExist.items[i].quantity -=1
                     cartExist.totalPrice -= productCheck.price
                     if(cartExist.items[i].quantity==0){
@@ -179,7 +179,7 @@ const updateCart = async function(req, res){
                     }
                     else break;
                 }
-                if(removeProduct===0){
+                if(removeProduct === 0){
                     cartExist.totalItems -=1
                     cartExist.totalPrice -= (cartExist.items[i].quantity*productCheck.price)
                     cartExist.items.remove(cartExist.items[i])
@@ -190,7 +190,8 @@ const updateCart = async function(req, res){
                 return res.status(404).send({status:false, message:"Product does not exist in the cart"})
             }          
         }
-    }else{
+    }
+    else{
         res.status(404).send({status: false, message:"Cart does not have any item, please add items first to perform Update Api"})
     }
         
@@ -212,7 +213,10 @@ const deleteCart = async function (req, res) {
         if (!validator.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Enter Valid Userid" })
         }
-    
+        const existUser = await userModel.findById(userId)
+        if (!existUser) {
+            return res.status(404).send({ status: false, message: "User ID not found by ID given in params" })
+        }
         const existCart = await cartModel.findOne({userId:userId});
         if (!existCart || existCart.totalItems == 0) {
             return res.status(404).send({ status: false, message: "Cart Does Not Exist Or Allready Deleted" })

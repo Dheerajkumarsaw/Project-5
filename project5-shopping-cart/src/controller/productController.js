@@ -118,7 +118,7 @@ const getByQueryFilter = async function (req, res) {
         const queryFilter = req.query;
         let filteredList
         if (Object.keys(queryFilter).length != 0) {
-            const { size, name, priceLessThan, priceGreaterThan, priceSort } = queryFilter
+            const { size, name, priceLessThan, priceGreaterThan, } = queryFilter
             if ("size" in queryFilter) {
                 const sizeParse = JSON.parse(size)
                 for (let i = 0; i < sizeParse.length; i++) {

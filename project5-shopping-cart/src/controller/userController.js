@@ -190,8 +190,8 @@ const updateUser = async function (req, res) {
             newData['lname'] = lname
         }
         if (validator.isValidBody(email)) {
-            if (!validator.isValidEmail(email)) 
-            return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
+            if (!validator.isValidEmail(email))
+                return res.status(400).send({ status: false, message: "Please Enter a valid Email ID" })
             newData['email'] = email
         }
         if (validator.isValidBody(phone)) {
@@ -205,7 +205,7 @@ const updateUser = async function (req, res) {
             const hashedPassword = await bcrypt.hash(password, 10)
             newData['password'] = hashedPassword
         }
-        
+
         if (file.length > 0) {
             if (!validator.checkImage(file[0].originalname)) {
                 return res.status(400).send({ status: false, message: "Enter Right Image Formate jpeg/jpg/png only" })
@@ -275,10 +275,11 @@ const updateUser = async function (req, res) {
             return res.status(403).send({ status: false, message: "You are unauthorized to make changes" })
         }
         //---------Already Exixts for phone and email data --DB Check-----
-        const doublicateCheck = await userModel.find({ $or: [{ email: email, phone: phone }] })
-        if (doublicateCheck.length > 0)
-            return res.status(400).send({ status: false, message: "Please Check wheather phone number and email Id already exists" })
-
+        if ("email" in requestBody || "phone" in requestBody) {
+            const doublicateCheck = await userModel.find({ $or: [{ email: email, phone: phone }] })
+            if (doublicateCheck.length != 0)
+                return res.status(400).send({ status: false, message: "Please Check wheather phone number and email Id already exists" })
+        }
         //---------updation perform in DB-------------
         const updatething = await userModel.findOneAndUpdate({ _id: userId }, newData, { new: true })
         return res.status(200).send({ status: true, message: "Success", data: updatething })
