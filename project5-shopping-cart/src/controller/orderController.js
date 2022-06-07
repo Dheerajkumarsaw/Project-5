@@ -85,12 +85,12 @@ const updateOrder = async function (req, res) {
             return res.status(404).send({ status: false, message: "order not found" })
         }
         if (!validator.isValidOrderEnum(status)) {
-            return res.status(400).send({ status: false, message: "Enter only any of these pending, completed, cancled" })
+            return res.status(400).send({ status: false, message: "Enter only any of these pending, completed, cancelled" })
         }
         if (userId != existOrder.userId) {  // also  autherization
             return res.status(403).send({ status: false, message: "trying to make change by defferent user" })
         }
-        if (status == "cancled") {
+        if (status == "cancelled") {
             if (!existOrder.cancellable) {
                 return res.status(400).send({ status: false, message: "This order is not cancellable " })
             }
@@ -106,13 +106,13 @@ const updateOrder = async function (req, res) {
             if (existOrder.status == "completed") {
                 return res.status(400).send({ status: false, message: "This order is not updatable Already completed" })
             }
-            if (existOrder.status == "cancled") {
-                return res.status(400).send({ status: false, message: "This order is not updatable Already cancled" })
+            if (existOrder.status == "cancelled") {
+                return res.status(400).send({ status: false, message: "This order is not updatable Already cancelled" })
             }
         }
         if (status == "pending") {
             if (existOrder.status != "pending") {
-                return res.status(400).send({ status: false, message: "This order is not updatable Already canceled or completed" })
+                return res.status(400).send({ status: false, message: "This order is not updatable Already cancelled or completed" })
             } else {
                 return res.status(400).send({ status: false, message: "This order is Already in pending" })
             }

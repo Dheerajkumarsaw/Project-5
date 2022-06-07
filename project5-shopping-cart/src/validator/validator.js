@@ -69,7 +69,7 @@ const validQuantity = function isInteger(value) {
 }
 
 const isValidOrderEnum = function (value) {
-    return ["pending", "completed", "cancled"].indexOf(value) !== -1
+    return ["pending", "completed", "cancelled"].indexOf(value) !== -1
 }
 
 let checkImage = (img) => {
